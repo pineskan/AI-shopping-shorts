@@ -1,1 +1,57 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Shopping Shorts</title>
+<style>
+body {
+  margin: 0;
+  padding: 30px 20px;
+  background: #101827;
+  color: white;
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+.container {
+  max-width: 500px;
+  margin: 60px auto;
+}
+h1 { font-size: 30px; }
+p { color: #b9c5d5; }
+button {
+  width: 100%;
+  padding: 20px;
+  margin-top: 20px;
+  border: 0;
+  border-radius: 12px;
+  background: #16c784;
+  color: #071b14;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+}
+#status {
+  margin-top: 25px;
+  line-height: 1.6;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>AI Shopping Shorts</h1>
+  <p>One-Click Video Creation</p>
+  <p>Discover popular products and create English advertising shorts.</p>
+  <button onclick="startApp()">START</button>
+  <div id="status">Ready to start</div>
+</div>
+<script>
+function startApp() {
+  document.getElementById("status").innerText =
+    "Welcome! AI Shopping Shorts is starting...";
+}
+</script>
+</body>
+</html>
+
