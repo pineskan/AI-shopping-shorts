@@ -21,7 +21,6 @@ body{
 main{max-width:520px;margin:25px auto}
 
 h1{text-align:center;color:#16c784}
-
 .subtitle{text-align:center;color:#bdc8d8}
 
 .card{
@@ -77,7 +76,11 @@ button:disabled{opacity:.5;cursor:wait}
   line-height:1.6
 }
 
-video{width:100%;margin-top:15px;border-radius:10px}
+video{
+  width:100%;
+  margin-top:15px;
+  border-radius:10px
+}
 
 a{
   color:#16c784;
@@ -85,6 +88,43 @@ a{
   margin:15px 0;
   text-align:center
 }
+
+.product-item{
+  background:#101827;
+  border:1px solid #46546b;
+  border-radius:10px;
+  padding:12px;
+  margin:12px 0;
+}
+
+.product-item img{
+  width:100%;
+  height:180px;
+  object-fit:contain;
+  border-radius:8px;
+  background:white;
+}
+
+.product-item h4{
+  line-height:1.4;
+  margin:10px 0;
+}
+
+.product-price{
+  color:#16c784;
+  font-size:18px;
+  font-weight:bold;
+}
+
+.product-store{
+  color:#aab7ca;
+  font-size:13px;
+}
+
+.product-item button{
+  margin-bottom:0;
+}
+
 </style>
 </head>
 
@@ -94,7 +134,38 @@ a{
 <h1>AI Shopping Shorts</h1>
 <p class="subtitle">One-Click AI Video Creator</p>
 
+<!-- US TRENDING PRODUCTS -->
+
 <div class="card">
+
+<h3>🇺🇸 US Trending Products</h3>
+
+<p class="small">
+Discover popular products from US shopping search results.
+</p>
+
+<input
+ id="searchQuery"
+ value="popular trending products"
+ placeholder="Search products"
+>
+
+<button
+ type="button"
+ id="searchButton"
+ onclick="findProducts()"
+>
+FIND TOP 5 US PRODUCTS
+</button>
+
+<div id="products"></div>
+
+</div>
+
+<!-- PRODUCT INFORMATION -->
+
+<div class="card">
+
 <h3>Product Information</h3>
 
 <input
@@ -108,9 +179,13 @@ a{
  type="url"
  placeholder="Public HTTPS product image URL"
 >
+
 </div>
 
+<!-- ADVERTISEMENT SETTINGS -->
+
 <div class="card">
+
 <h3>Advertisement Settings</h3>
 
 <select id="voice">
@@ -118,7 +193,10 @@ a{
 <option value="male">Male Voice</option>
 </select>
 
-<button type="button" onclick="previewVoice()">
+<button
+ type="button"
+ onclick="previewVoice()"
+>
 PREVIEW VOICE
 </button>
 
@@ -140,7 +218,10 @@ GENERATE SCRIPT
 
 </div>
 
+<!-- VIDEO PRODUCTION -->
+
 <div class="card">
+
 <h3>Video Production</h3>
 
 <p class="small">
@@ -156,6 +237,7 @@ START AUTOMATION
 </button>
 
 <div id="video"></div>
+
 </div>
 
 <div id="status">Ready to start</div>
@@ -168,9 +250,28 @@ const $ = id => document.getElementById(id);
 
 let busy = false;
 
+// STATUS
+
 function status(message){
   $("status").textContent = message;
 }
+
+// GET JSON
+
+async function getJSON(url){
+
+  const response = await fetch(url);
+
+  const data = await response.json();
+
+  if(!response.ok){
+    throw new Error(data.error || "Request failed");
+  }
+
+  return data;
+}
+
+// POST JSON
 
 async function post(url,body){
 
@@ -189,16 +290,125 @@ async function post(url,body){
   return data;
 }
 
-async function getJSON(url){
+// FIND US TRENDING PRODUCTS
 
-  const response = await fetch(url);
-  const data = await response.json();
+async function findProducts(){
 
-  if(!response.ok){
-    throw new Error(data.error || "Request failed");
+  if(busy) return;
+
+  const query = $("searchQuery").value.trim();
+
+  if(!query){
+    alert("Enter a product search keyword.");
+    return;
   }
 
-  return data;
+  busy = true;
+
+  $("searchButton").disabled = true;
+  $("products").replaceChildren();
+
+  status("Searching US shopping products...");
+
+  try{
+
+    const data = await getJSON(
+      "/api/trending?q=" + encodeURIComponent(query)
+    );
+
+    if(!data.products || data.products.length === 0){
+      status("No products found. Try another search.");
+      return;
+    }
+
+    data.products.forEach(item => {
+
+      const card = document.createElement("div");
+      card.className = "product-item";
+
+      const image = document.createElement("img");
+      image.alt = item.name || "Product image";
+      image.loading = "lazy";
+
+      if(item.imageUrl){
+        image.src = item.imageUrl;
+      }else{
+        image.alt = "Image unavailable";
+      }
+
+      const name = document.createElement("h4");
+      name.textContent =
+        item.rank + ". " + item.name;
+
+      const price = document.createElement("div");
+      price.className = "product-price";
+      price.textContent = item.price;
+
+      const store = document.createElement("div");
+      store.className = "product-store";
+      store.textContent = "Store: " + item.store;
+
+      const selectButton = document.createElement("button");
+      selectButton.textContent = "SELECT THIS PRODUCT";
+
+      selectButton.onclick = () => {
+
+        $("product").value = item.name;
+
+        $("imageUrl").value = item.imageUrl || "";
+
+        $("script").value = "";
+
+        $("video").replaceChildren();
+
+        status("Product selected: " + item.name);
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth"
+        });
+
+      };
+
+      card.append(
+        image,
+        name,
+        price,
+        store,
+        selectButton
+      );
+
+      if(item.productUrl){
+
+        const link = document.createElement("a");
+
+        link.href = item.productUrl;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = "VIEW PRODUCT";
+
+        card.append(link);
+      }
+
+      $("products").append(card);
+
+    });
+
+    status(
+      "Found " + data.products.length +
+      " shopping results."
+    );
+
+  }catch(error){
+
+    status("SEARCH ERROR: " + error.message);
+
+  }finally{
+
+    busy = false;
+    $("searchButton").disabled = false;
+
+  }
 }
 
 // GENERATE SCRIPT
@@ -236,6 +446,7 @@ async function generateScriptButton(){
   }
 
   busy = true;
+
   $("scriptButton").disabled = true;
   $("startButton").disabled = true;
 
@@ -252,6 +463,7 @@ async function generateScriptButton(){
   }finally{
 
     busy = false;
+
     $("scriptButton").disabled = false;
     $("startButton").disabled = false;
 
@@ -270,11 +482,12 @@ function previewVoice(){
   }
 
   if(!("speechSynthesis" in window)){
-    alert("Voice preview is not supported in this browser.");
+    alert("Voice preview is not supported.");
     return;
   }
 
-  const utterance = new SpeechSynthesisUtterance(script);
+  const utterance =
+    new SpeechSynthesisUtterance(script);
 
   utterance.lang = "en-US";
   utterance.rate = 0.95;
@@ -306,7 +519,11 @@ async function generateVoice(script){
 
 // CREATE VIDEO
 
-async function renderVideo(script,imageUrl,audioUrl){
+async function renderVideo(
+  script,
+  imageUrl,
+  audioUrl
+){
 
   status("3/4 Sending video to Shotstack...");
 
@@ -331,34 +548,36 @@ async function waitForVideo(id){
 
   for(let i=0;i<60;i++){
 
-    await new Promise(resolve=>
+    await new Promise(resolve =>
       setTimeout(resolve,5000)
     );
 
     const data = await getJSON(
-      "/api/render?id="+encodeURIComponent(id)
+      "/api/render?id=" + encodeURIComponent(id)
     );
 
     const render = data.response;
 
     status(
-      "4/4 Video status: "+
+      "4/4 Video status: " +
       (render.status || "processing")
     );
 
-    if(render.status==="done"){
+    if(render.status === "done"){
 
       if(!render.url){
         throw new Error("Video URL missing");
       }
 
-      const player = document.createElement("video");
+      const player =
+        document.createElement("video");
 
       player.controls = true;
       player.playsInline = true;
       player.src = render.url;
 
-      const link = document.createElement("a");
+      const link =
+        document.createElement("a");
 
       link.href = render.url;
       link.download = "shopping-shorts.mp4";
@@ -371,7 +590,8 @@ async function waitForVideo(id){
       return;
     }
 
-    if(render.status==="failed"){
+    if(render.status === "failed"){
+
       throw new Error(
         render.error || "Video rendering failed"
       );
@@ -396,7 +616,7 @@ async function startAutomation(){
   }
 
   if(!/^https:\/\/.+/i.test(imageUrl)){
-    alert("Enter a public HTTPS product image URL.");
+    alert("Select a product or enter a public HTTPS image URL.");
     return;
   }
 
@@ -404,6 +624,7 @@ async function startAutomation(){
 
   $("startButton").disabled = true;
   $("scriptButton").disabled = true;
+  $("searchButton").disabled = true;
 
   $("video").replaceChildren();
 
@@ -418,11 +639,10 @@ async function startAutomation(){
     const audioUrl = await generateVoice(script);
 
     const id = await renderVideo(
-  script,
-  imageUrl,
-  audioUrl,
-  product
-);
+      script,
+      imageUrl,
+      audioUrl
+    );
 
     await waitForVideo(id);
 
@@ -436,6 +656,7 @@ async function startAutomation(){
 
     $("startButton").disabled = false;
     $("scriptButton").disabled = false;
+    $("searchButton").disabled = false;
 
   }
 }
