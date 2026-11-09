@@ -4,6 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101827">
 <title>AI Shopping Shorts</title>
 
 <style>
@@ -34,14 +35,27 @@ h1 {
 
 .card {
   background: #1d293b;
-  padding: 17px;
+  padding: 18px;
   margin: 15px 0;
   border-radius: 12px;
 }
 
+input, select, textarea {
+  width: 100%;
+  padding: 13px;
+  margin: 8px 0;
+  border-radius: 8px;
+  border: 1px solid #46546b;
+  background: #101827;
+  color: white;
+  font-size: 15px;
+}
+
+textarea { resize: vertical; }
+
 button {
   width: 100%;
-  padding: 15px;
+  padding: 16px;
   margin: 10px 0;
   border: 0;
   border-radius: 9px;
@@ -57,25 +71,21 @@ button:disabled {
   cursor: wait;
 }
 
-input, select, textarea {
-  width: 100%;
-  padding: 13px;
-  margin: 8px 0;
-  border-radius: 8px;
-  border: 1px solid #46546b;
-  background: #1d293b;
-  color: white;
-  font-size: 15px;
+#startButton {
+  background: #16c784;
+  font-size: 19px;
+  padding: 20px;
 }
 
 .small {
   color: #aab7ca;
   font-size: 13px;
+  line-height: 1.6;
 }
 
 #status {
   text-align: center;
-  margin: 18px 0;
+  margin: 20px 0;
   color: #16c784;
   overflow-wrap: anywhere;
 }
@@ -86,8 +96,13 @@ video {
   border-radius: 10px;
 }
 
-a {
-  color: #16c784;
+a { color: #16c784; }
+
+#video a {
+  display: block;
+  margin: 15px 0;
+  font-weight: bold;
+  text-align: center;
 }
 </style>
 </head>
@@ -96,66 +111,70 @@ a {
 <main>
 
 <h1>AI Shopping Shorts</h1>
-<p class="subtitle">One-Click Shopping Video Creator</p>
+<p class="subtitle">One-Click AI Video Creator</p>
 
 <div class="card">
-<h3>1. Product Search</h3>
+  <h3>Product Information</h3>
 
-<input id="keyword"
-placeholder="Enter product keyword">
+  <label>Product Name</label>
+  <input
+    id="product"
+    placeholder="Example: Wireless Earbuds"
+  >
 
-<button onclick="searchProducts()">
-SEARCH PRODUCTS
-</button>
+  <label>Product Image URL</label>
+  <input
+    id="imageUrl"
+    type="url"
+    placeholder="https://example.com/product.jpg"
+  >
 
-<div id="products"></div>
+  <p class="small">
+    Enter a publicly accessible HTTPS product image URL.
+  </p>
 </div>
 
 <div class="card">
-<h3>2. Create English Advertisement</h3>
+  <h3>Advertisement Settings</h3>
 
-<select id="voice">
-<option value="female">Female Voice</option>
-<option value="male">Male Voice</option>
-</select>
+  <label>English Voice Preview</label>
+  <select id="voice">
+    <option value="female">Female Voice</option>
+    <option value="male">Male Voice</option>
+  </select>
 
-<button onclick="createScript()">
-GENERATE SCRIPT
-</button>
+  <label>Advertisement Script</label>
+  <textarea
+    id="script"
+    rows="6"
+    placeholder="AI-generated English advertisement..."
+  ></textarea>
 
-<textarea id="script"
-rows="7"
-placeholder="English advertisement appears here"></textarea>
-
-<button onclick="previewVoice()">
-PREVIEW ENGLISH VOICE
-</button>
+  <button onclick="previewVoice()">
+    PREVIEW VOICE
+  </button>
 </div>
 
 <div class="card">
-<h3>3. Video Production</h3>
+  <h3>Video Production</h3>
 
-<label>Product Image URL</label>
-<input id="imageUrl"
-type="url"
-placeholder="https://example.com/product.jpg">
+  <label>Optional MP3 Voice URL</label>
+  <input
+    id="audioUrl"
+    type="url"
+    placeholder="https://example.com/voice.mp3"
+  >
 
-<label>Optional MP3 Voice URL</label>
-<input id="audioUrl"
-type="url"
-placeholder="Public MP3 URL (optional)">
+  <p class="small">
+    An MP3 URL is required for voice narration in the
+    finished video. Browser voice preview is separate.
+  </p>
 
-<p class="small">
-Use a publicly accessible HTTPS image URL.
-Add an MP3 URL if you want voice audio in the finished video.
-Browser voice preview is not an MP3 file.
-</p>
+  <button id="startButton" onclick="startAutomation()">
+    START AUTOMATION
+  </button>
 
-<button id="videoButton" onclick="createVideo()">
-CREATE SHORTS VIDEO
-</button>
-
-<div id="video"></div>
+  <div id="video"></div>
 </div>
 
 <div id="status">Ready to start</div>
@@ -164,229 +183,100 @@ CREATE SHORTS VIDEO
 
 <script>
 
-const sampleProducts = [
-  {name:"Wireless Earbuds"},
-  {name:"Portable Blender"},
-  {name:"Smart Watch"},
-  {name:"Mini Projector"},
-  {name:"LED Desk Lamp"}
-];
+const $ = id => document.getElementById(id);
 
-function escapeHTML(value) {
-  return String(value).replace(/[&<>"']/g, c => ({
-    "&":"&amp;",
-    "<":"&lt;",
-    ">":"&gt;",
-    '"':"&quot;",
-    "'":"&#39;"
-  })[c]);
+let busy = false;
+
+function setStatus(message) {
+  $("status").textContent = message;
 }
 
-function searchProducts() {
-  const keyword =
-    document.getElementById("keyword").value.trim();
-
-  const list = document.getElementById("products");
-
-  if (!keyword) {
-    list.textContent = "Enter a product keyword.";
-    return;
-  }
-
-  list.innerHTML =
-    "<p>Product suggestions for: " +
-    escapeHTML(keyword) + "</p>";
-
-  sampleProducts.forEach(product => {
-    const item = document.createElement("div");
-    item.className = "card";
-
-    const name = document.createElement("b");
-    name.textContent = product.name;
-
-    const button = document.createElement("button");
-    button.textContent = "SELECT";
-    button.onclick = () => selectProduct(product.name);
-
-    item.append(name, button);
-    list.appendChild(item);
+async function postJSON(url, body) {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(body)
   });
 
-  document.getElementById("status").textContent =
-    "Demo suggestions only. Live product search is not connected.";
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || "Request failed");
+  }
+
+  return data;
 }
 
-function selectProduct(name) {
-  document.getElementById("keyword").value = name;
+// Generate English advertisement
+async function generateScript(product) {
+  setStatus("1/3 Creating English advertisement...");
 
-  document.getElementById("status").textContent =
-    name + " selected";
+  const data = await postJSON("/api/generate", {
+    product
+  });
+
+  if (!data.script) {
+    throw new Error("Advertisement script was not returned.");
+  }
+
+  $("script").value = data.script;
+
+  return data.script;
 }
 
-async function createScript() {
-  const product =
-    document.getElementById("keyword").value.trim();
+// Create Shotstack video
+async function renderVideo(script, imageUrl, audioUrl) {
+  setStatus("2/3 Sending video to Shotstack...");
 
-  const status = document.getElementById("status");
-  const scriptBox = document.getElementById("script");
+  const data = await postJSON("/api/render", {
+    script,
+    imageUrl,
+    audioUrl
+  });
 
-  if (!product) {
-    alert("Please enter a product name first.");
-    return;
+  const renderId = data.response?.id;
+
+  if (!renderId) {
+    throw new Error("Render ID was not returned.");
   }
 
-  status.textContent = "Creating English advertisement...";
-
-  try {
-    const response = await fetch("/api/generate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({product})
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || "Script generation failed");
-    }
-
-    scriptBox.value = data.script;
-
-    status.textContent =
-      "English advertisement created successfully!";
-
-  } catch (error) {
-    status.textContent = "Error: " + error.message;
-  }
+  return renderId;
 }
 
-function previewVoice() {
-  const script =
-    document.getElementById("script").value.trim();
+// Check video rendering
+async function waitForVideo(renderId) {
+  setStatus("3/3 Rendering your video...");
 
-  if (!script) {
-    alert("Generate your advertisement first.");
-    return;
-  }
+  for (let i = 0; i < 60; i++) {
 
-  const voice =
-    document.getElementById("voice").value;
-
-  const utterance =
-    new SpeechSynthesisUtterance(script);
-
-  utterance.lang = "en-US";
-  utterance.rate = 0.95;
-  utterance.pitch = voice === "female" ? 1.15 : 0.85;
-
-  speechSynthesis.cancel();
-  speechSynthesis.speak(utterance);
-
-  document.getElementById("status").textContent =
-    "English voice preview is playing.";
-}
-
-async function createVideo() {
-  const script =
-    document.getElementById("script").value.trim();
-
-  const imageUrl =
-    document.getElementById("imageUrl").value.trim();
-
-  const audioUrl =
-    document.getElementById("audioUrl").value.trim();
-
-  const status = document.getElementById("status");
-  const video = document.getElementById("video");
-  const button = document.getElementById("videoButton");
-
-  if (!script) {
-    alert("Generate your English advertisement first.");
-    return;
-  }
-
-  if (!imageUrl || !imageUrl.startsWith("https://")) {
-    alert("Enter a public HTTPS product image URL.");
-    return;
-  }
-
-  if (audioUrl && !audioUrl.startsWith("https://")) {
-    alert("The MP3 URL must start with https://");
-    return;
-  }
-
-  button.disabled = true;
-  video.innerHTML = "";
-
-  status.textContent = "Sending video to Shotstack...";
-
-  try {
-    const response = await fetch("/api/render", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        script,
-        imageUrl,
-        audioUrl
-      })
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.error || "Render request failed");
-    }
-
-    const renderId = result.response?.id;
-
-    if (!renderId) {
-      throw new Error("Render ID was not returned.");
-    }
-
-    status.textContent =
-      "Video rendering started. Please wait...";
-
-    await checkRender(renderId);
-
-  } catch (error) {
-    status.textContent = "Error: " + error.message;
-  } finally {
-    button.disabled = false;
-  }
-}
-
-async function checkRender(renderId) {
-  const status = document.getElementById("status");
-  const video = document.getElementById("video");
-
-  for (let attempt = 0; attempt < 60; attempt++) {
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise(resolve =>
+      setTimeout(resolve, 5000)
+    );
 
     const response = await fetch(
       "/api/render?id=" + encodeURIComponent(renderId)
     );
 
-    const result = await response.json();
+    const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(result.error || "Status check failed");
+      throw new Error(data.error || "Video status failed.");
     }
 
-    const render = result.response;
+    const render = data.response;
 
-    status.textContent =
-      "Video status: " + (render.status || "processing");
+    setStatus(
+      "Rendering video: " +
+      (render.status || "processing")
+    );
 
     if (render.status === "done") {
-      if (!render.url) {
-        throw new Error("Video completed but URL is missing.");
-      }
 
-      video.innerHTML = "";
+      if (!render.url) {
+        throw new Error("Video URL is missing.");
+      }
 
       const player = document.createElement("video");
       player.controls = true;
@@ -396,23 +286,108 @@ async function checkRender(renderId) {
       const link = document.createElement("a");
       link.href = render.url;
       link.download = "shopping-shorts.mp4";
-      link.textContent = "SAVE MP4 VIDEO";
+      link.textContent = "SAVE YOUR MP4 VIDEO";
 
-      video.append(player, link);
+      $("video").replaceChildren(player, link);
 
-      status.textContent = "Your video is ready!";
+      setStatus("SUCCESS! Your video is ready.");
 
       return;
     }
 
     if (render.status === "failed") {
-      throw new Error(render.error || "Video rendering failed.");
+      throw new Error(
+        render.error || "Video rendering failed."
+      );
     }
   }
 
-  status.textContent =
-    "Rendering is taking longer. Check again using the render ID: " +
-    renderId;
+  throw new Error(
+    "Rendering is taking longer. Render ID: " + renderId
+  );
+}
+
+// ONE CLICK AUTOMATION
+async function startAutomation() {
+
+  if (busy) return;
+
+  const product = $("product").value.trim();
+  const imageUrl = $("imageUrl").value.trim();
+  const audioUrl = $("audioUrl").value.trim();
+
+  if (!product) {
+    alert("Enter a product name.");
+    return;
+  }
+
+  if (!imageUrl.startsWith("https://")) {
+    alert("Enter a public HTTPS product image URL.");
+    return;
+  }
+
+  if (audioUrl && !audioUrl.startsWith("https://")) {
+    alert("MP3 URL must start with HTTPS.");
+    return;
+  }
+
+  busy = true;
+  $("startButton").disabled = true;
+  $("video").replaceChildren();
+
+  try {
+
+    // Step 1: AI script
+    const script = await generateScript(product);
+
+    // Step 2: Shotstack render
+    const renderId = await renderVideo(
+      script,
+      imageUrl,
+      audioUrl
+    );
+
+    // Step 3: Wait for completed video
+    await waitForVideo(renderId);
+
+  } catch (error) {
+
+    setStatus("ERROR: " + error.message);
+
+  } finally {
+
+    busy = false;
+    $("startButton").disabled = false;
+
+  }
+}
+
+// Browser voice preview
+function previewVoice() {
+
+  const script = $("script").value.trim();
+
+  if (!script) {
+    alert("Generate your script first.");
+    return;
+  }
+
+  if (!("speechSynthesis" in window)) {
+    alert("Voice preview is not supported by this browser.");
+    return;
+  }
+
+  const utterance = new SpeechSynthesisUtterance(script);
+
+  utterance.lang = "en-US";
+  utterance.rate = 0.95;
+  utterance.pitch =
+    $("voice").value === "female" ? 1.15 : 0.85;
+
+  speechSynthesis.cancel();
+  speechSynthesis.speak(utterance);
+
+  setStatus("English voice preview is playing.");
 }
 
 </script>
