@@ -7,51 +7,154 @@
 <title>AI Shopping Shorts</title>
 <style>
 body {
-  margin: 0;
-  padding: 30px 20px;
-  background: #101827;
-  color: white;
-  font-family: Arial, sans-serif;
-  text-align: center;
+  margin:0;
+  padding:25px 18px;
+  background:#101827;
+  color:white;
+  font-family:Arial,sans-serif;
 }
-.container {
-  max-width: 500px;
-  margin: 60px auto;
+main {
+  max-width:520px;
+  margin:35px auto;
 }
-h1 { font-size: 30px; }
-p { color: #b9c5d5; }
+h1 {text-align:center;color:#16c784}
+.subtitle {text-align:center;color:#bdc8d8}
 button {
-  width: 100%;
-  padding: 20px;
-  margin-top: 20px;
-  border: 0;
-  border-radius: 12px;
-  background: #16c784;
-  color: #071b14;
-  font-size: 20px;
-  font-weight: bold;
-  cursor: pointer;
+  width:100%;
+  padding:16px;
+  margin:10px 0;
+  border:0;
+  border-radius:10px;
+  background:#16c784;
+  color:#071b14;
+  font-size:17px;
+  font-weight:bold;
 }
-#status {
-  margin-top: 25px;
-  line-height: 1.6;
+input,select,textarea {
+  width:100%;
+  box-sizing:border-box;
+  padding:13px;
+  margin:8px 0;
+  border-radius:8px;
+  border:1px solid #46546b;
+  background:#1d293b;
+  color:white;
 }
+.card {
+  background:#1d293b;
+  padding:15px;
+  margin:12px 0;
+  border-radius:12px;
+}
+.small {color:#aab7ca;font-size:13px}
+#status {text-align:center;margin:15px;color:#16c784}
 </style>
 </head>
 <body>
-<div class="container">
-  <h1>AI Shopping Shorts</h1>
-  <p>One-Click Video Creation</p>
-  <p>Discover popular products and create English advertising shorts.</p>
-  <button onclick="startApp()">START</button>
-  <div id="status">Ready to start</div>
+<main>
+<h1>AI Shopping Shorts</h1>
+<p class="subtitle">One-Click Shopping Video Creator</p>
+
+<div class="card">
+<h3>1. Product Search</h3>
+<input id="keyword" placeholder="Enter product keyword">
+<button onclick="searchProducts()">SEARCH PRODUCTS</button>
+<div id="products"></div>
 </div>
+
+<div class="card">
+<h3>2. Create English Advertisement</h3>
+<select id="voice">
+<option value="female">Female Voice</option>
+<option value="male">Male Voice</option>
+</select>
+<button onclick="createScript()">GENERATE SCRIPT</button>
+<textarea id="script" rows="7" placeholder="Your English advertisement will appear here"></textarea>
+</div>
+
+<div class="card">
+<h3>3. Video Production</h3>
+<button onclick="createVideo()">CREATE SHORTS VIDEO</button>
+<div id="video"></div>
+</div>
+
+<div id="status">Ready to start</div>
+</main>
+
 <script>
-function startApp() {
-  document.getElementById("status").innerText =
-    "Welcome! AI Shopping Shorts is starting...";
+const sampleProducts = [
+{name:"Wireless Earbuds",price:"Price not verified",shop:"Search required"},
+{name:"Portable Blender",price:"Price not verified",shop:"Search required"},
+{name:"Smart Watch",price:"Price not verified",shop:"Search required"},
+{name:"Mini Projector",price:"Price not verified",shop:"Search required"},
+{name:"LED Desk Lamp",price:"Price not verified",shop:"Search required"}
+];
+
+function searchProducts() {
+ const keyword = document.getElementById("keyword").value.trim();
+ const list = document.getElementById("products");
+ if(!keyword) {
+   list.innerHTML = "Please enter a product keyword.";
+   return;
+ }
+ list.innerHTML = "<p>Search suggestions for: "+escapeHTML(keyword)+"</p>";
+ sampleProducts.forEach(p => {
+   list.innerHTML += `
+   <div class="card">
+   <b>${p.name}</b>
+   <p>${p.price}</p>
+   <p class="small">${p.shop}</p>
+   <button onclick="selectProduct('${p.name}')">SELECT</button>
+   </div>`;
+ });
+ document.getElementById("status").innerText =
+ "Demo suggestions only. Live product data is not connected.";
+}
+
+function selectProduct(name) {
+ document.getElementById("keyword").value = name;
+ document.getElementById("status").innerText = name+" selected";
+}
+
+function createScript() {
+ const product = document.getElementById("keyword").value.trim();
+ if(!product) {
+   alert("Please select a product first.");
+   return;
+ }
+ const script = `Discover the amazing ${product}!
+Looking for something useful and convenient?
+This product may be just what you need.
+Check the details and see if it is right for you!
+Shop smart today!`;
+ document.getElementById("script").value = script;
+ document.getElementById("status").innerText =
+ "Advertisement draft created.";
+}
+
+function createVideo() {
+ const script = document.getElementById("script").value.trim();
+ if(!script) {
+   alert("Generate your advertisement first.");
+   return;
+ }
+ const voice = document.getElementById("voice").value;
+ const utterance = new SpeechSynthesisUtterance(script);
+ utterance.lang = "en-US";
+ utterance.rate = 0.95;
+ utterance.pitch = voice === "female" ? 1.15 : 0.85;
+ speechSynthesis.cancel();
+ speechSynthesis.speak(utterance);
+ document.getElementById("video").innerHTML =
+ "<p>English voice preview is playing. Full video rendering is not connected yet.</p>";
+}
+
+function escapeHTML(s) {
+ return s.replace(/[&<>"']/g, c => ({
+ "&":"&amp;","<":"&lt;",">":"&gt;",
+ '"':"&quot;","'":"&#39;"
+ })[c]);
 }
 </script>
 </body>
 </html>
-
