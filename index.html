@@ -5,175 +5,417 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AI Shopping Shorts</title>
+
 <style>
+* { box-sizing: border-box; }
+
 body {
-  margin:0;
-  padding:25px 18px;
-  background:#101827;
-  color:white;
-  font-family:Arial,sans-serif;
+  margin: 0;
+  padding: 20px;
+  background: #101827;
+  color: white;
+  font-family: Arial, sans-serif;
 }
+
 main {
-  max-width:520px;
-  margin:35px auto;
+  max-width: 520px;
+  margin: 25px auto;
 }
-h1 {text-align:center;color:#16c784}
-.subtitle {text-align:center;color:#bdc8d8}
-button {
-  width:100%;
-  padding:16px;
-  margin:10px 0;
-  border:0;
-  border-radius:10px;
-  background:#16c784;
-  color:#071b14;
-  font-size:17px;
-  font-weight:bold;
+
+h1 {
+  text-align: center;
+  color: #16c784;
 }
-input,select,textarea {
-  width:100%;
-  box-sizing:border-box;
-  padding:13px;
-  margin:8px 0;
-  border-radius:8px;
-  border:1px solid #46546b;
-  background:#1d293b;
-  color:white;
+
+.subtitle {
+  text-align: center;
+  color: #bdc8d8;
 }
+
 .card {
-  background:#1d293b;
-  padding:15px;
-  margin:12px 0;
-  border-radius:12px;
+  background: #1d293b;
+  padding: 17px;
+  margin: 15px 0;
+  border-radius: 12px;
 }
-.small {color:#aab7ca;font-size:13px}
-#status {text-align:center;margin:15px;color:#16c784}
+
+button {
+  width: 100%;
+  padding: 15px;
+  margin: 10px 0;
+  border: 0;
+  border-radius: 9px;
+  background: #16c784;
+  color: #071b14;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: .5;
+  cursor: wait;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 13px;
+  margin: 8px 0;
+  border-radius: 8px;
+  border: 1px solid #46546b;
+  background: #1d293b;
+  color: white;
+  font-size: 15px;
+}
+
+.small {
+  color: #aab7ca;
+  font-size: 13px;
+}
+
+#status {
+  text-align: center;
+  margin: 18px 0;
+  color: #16c784;
+  overflow-wrap: anywhere;
+}
+
+video {
+  width: 100%;
+  margin-top: 15px;
+  border-radius: 10px;
+}
+
+a {
+  color: #16c784;
+}
 </style>
 </head>
+
 <body>
 <main>
+
 <h1>AI Shopping Shorts</h1>
 <p class="subtitle">One-Click Shopping Video Creator</p>
 
 <div class="card">
 <h3>1. Product Search</h3>
-<input id="keyword" placeholder="Enter product keyword">
-<button onclick="searchProducts()">SEARCH PRODUCTS</button>
+
+<input id="keyword"
+placeholder="Enter product keyword">
+
+<button onclick="searchProducts()">
+SEARCH PRODUCTS
+</button>
+
 <div id="products"></div>
 </div>
 
 <div class="card">
 <h3>2. Create English Advertisement</h3>
+
 <select id="voice">
 <option value="female">Female Voice</option>
 <option value="male">Male Voice</option>
 </select>
-<button onclick="createScript()">GENERATE SCRIPT</button>
-<textarea id="script" rows="7" placeholder="Your English advertisement will appear here"></textarea>
+
+<button onclick="createScript()">
+GENERATE SCRIPT
+</button>
+
+<textarea id="script"
+rows="7"
+placeholder="English advertisement appears here"></textarea>
+
+<button onclick="previewVoice()">
+PREVIEW ENGLISH VOICE
+</button>
 </div>
 
 <div class="card">
 <h3>3. Video Production</h3>
-<button onclick="createVideo()">CREATE SHORTS VIDEO</button>
+
+<label>Product Image URL</label>
+<input id="imageUrl"
+type="url"
+placeholder="https://example.com/product.jpg">
+
+<label>Optional MP3 Voice URL</label>
+<input id="audioUrl"
+type="url"
+placeholder="Public MP3 URL (optional)">
+
+<p class="small">
+Use a publicly accessible HTTPS image URL.
+Add an MP3 URL if you want voice audio in the finished video.
+Browser voice preview is not an MP3 file.
+</p>
+
+<button id="videoButton" onclick="createVideo()">
+CREATE SHORTS VIDEO
+</button>
+
 <div id="video"></div>
 </div>
 
 <div id="status">Ready to start</div>
+
 </main>
 
 <script>
+
 const sampleProducts = [
-{name:"Wireless Earbuds",price:"Price not verified",shop:"Search required"},
-{name:"Portable Blender",price:"Price not verified",shop:"Search required"},
-{name:"Smart Watch",price:"Price not verified",shop:"Search required"},
-{name:"Mini Projector",price:"Price not verified",shop:"Search required"},
-{name:"LED Desk Lamp",price:"Price not verified",shop:"Search required"}
+  {name:"Wireless Earbuds"},
+  {name:"Portable Blender"},
+  {name:"Smart Watch"},
+  {name:"Mini Projector"},
+  {name:"LED Desk Lamp"}
 ];
 
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, c => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  })[c]);
+}
+
 function searchProducts() {
- const keyword = document.getElementById("keyword").value.trim();
- const list = document.getElementById("products");
- if(!keyword) {
-   list.innerHTML = "Please enter a product keyword.";
-   return;
- }
- list.innerHTML = "<p>Search suggestions for: "+escapeHTML(keyword)+"</p>";
- sampleProducts.forEach(p => {
-   list.innerHTML += `
-   <div class="card">
-   <b>${p.name}</b>
-   <p>${p.price}</p>
-   <p class="small">${p.shop}</p>
-   <button onclick="selectProduct('${p.name}')">SELECT</button>
-   </div>`;
- });
- document.getElementById("status").innerText =
- "Demo suggestions only. Live product data is not connected.";
+  const keyword =
+    document.getElementById("keyword").value.trim();
+
+  const list = document.getElementById("products");
+
+  if (!keyword) {
+    list.textContent = "Enter a product keyword.";
+    return;
+  }
+
+  list.innerHTML =
+    "<p>Product suggestions for: " +
+    escapeHTML(keyword) + "</p>";
+
+  sampleProducts.forEach(product => {
+    const item = document.createElement("div");
+    item.className = "card";
+
+    const name = document.createElement("b");
+    name.textContent = product.name;
+
+    const button = document.createElement("button");
+    button.textContent = "SELECT";
+    button.onclick = () => selectProduct(product.name);
+
+    item.append(name, button);
+    list.appendChild(item);
+  });
+
+  document.getElementById("status").textContent =
+    "Demo suggestions only. Live product search is not connected.";
 }
 
 function selectProduct(name) {
- document.getElementById("keyword").value = name;
- document.getElementById("status").innerText = name+" selected";
+  document.getElementById("keyword").value = name;
+
+  document.getElementById("status").textContent =
+    name + " selected";
 }
 
 async function createScript() {
- const product = document.getElementById("keyword").value.trim();
- const status = document.getElementById("status");
- const scriptBox = document.getElementById("script");
+  const product =
+    document.getElementById("keyword").value.trim();
 
- if (!product) {
-   alert("Please enter a product name first.");
-   return;
- }
+  const status = document.getElementById("status");
+  const scriptBox = document.getElementById("script");
 
- status.innerText = "Creating your English advertisement...";
+  if (!product) {
+    alert("Please enter a product name first.");
+    return;
+  }
 
- try {
-   const response = await fetch("/api/generate", {
-     method: "POST",
-     headers: {
-       "Content-Type": "application/json"
-     },
-     body: JSON.stringify({ product })
-   });
+  status.textContent = "Creating English advertisement...";
 
-   const data = await response.json();
+  try {
+    const response = await fetch("/api/generate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({product})
+    });
 
-   if (!response.ok) {
-     throw new Error(data.error || "Script generation failed.");
-   }
+    const data = await response.json();
 
-   scriptBox.value = data.script;
-   status.innerText = "English advertisement created successfully!";
+    if (!response.ok) {
+      throw new Error(data.error || "Script generation failed");
+    }
 
- } catch (error) {
-   status.innerText = "Error: " + error.message;
- }
+    scriptBox.value = data.script;
+
+    status.textContent =
+      "English advertisement created successfully!";
+
+  } catch (error) {
+    status.textContent = "Error: " + error.message;
+  }
 }
 
-function createVideo() {
- const script = document.getElementById("script").value.trim();
- if(!script) {
-   alert("Generate your advertisement first.");
-   return;
- }
- const voice = document.getElementById("voice").value;
- const utterance = new SpeechSynthesisUtterance(script);
- utterance.lang = "en-US";
- utterance.rate = 0.95;
- utterance.pitch = voice === "female" ? 1.15 : 0.85;
- speechSynthesis.cancel();
- speechSynthesis.speak(utterance);
- document.getElementById("video").innerHTML =
- "<p>English voice preview is playing. Full video rendering is not connected yet.</p>";
+function previewVoice() {
+  const script =
+    document.getElementById("script").value.trim();
+
+  if (!script) {
+    alert("Generate your advertisement first.");
+    return;
+  }
+
+  const voice =
+    document.getElementById("voice").value;
+
+  const utterance =
+    new SpeechSynthesisUtterance(script);
+
+  utterance.lang = "en-US";
+  utterance.rate = 0.95;
+  utterance.pitch = voice === "female" ? 1.15 : 0.85;
+
+  speechSynthesis.cancel();
+  speechSynthesis.speak(utterance);
+
+  document.getElementById("status").textContent =
+    "English voice preview is playing.";
 }
 
-function escapeHTML(s) {
- return s.replace(/[&<>"']/g, c => ({
- "&":"&amp;","<":"&lt;",">":"&gt;",
- '"':"&quot;","'":"&#39;"
- })[c]);
+async function createVideo() {
+  const script =
+    document.getElementById("script").value.trim();
+
+  const imageUrl =
+    document.getElementById("imageUrl").value.trim();
+
+  const audioUrl =
+    document.getElementById("audioUrl").value.trim();
+
+  const status = document.getElementById("status");
+  const video = document.getElementById("video");
+  const button = document.getElementById("videoButton");
+
+  if (!script) {
+    alert("Generate your English advertisement first.");
+    return;
+  }
+
+  if (!imageUrl || !imageUrl.startsWith("https://")) {
+    alert("Enter a public HTTPS product image URL.");
+    return;
+  }
+
+  if (audioUrl && !audioUrl.startsWith("https://")) {
+    alert("The MP3 URL must start with https://");
+    return;
+  }
+
+  button.disabled = true;
+  video.innerHTML = "";
+
+  status.textContent = "Sending video to Shotstack...";
+
+  try {
+    const response = await fetch("/api/render", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        script,
+        imageUrl,
+        audioUrl
+      })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || "Render request failed");
+    }
+
+    const renderId = result.response?.id;
+
+    if (!renderId) {
+      throw new Error("Render ID was not returned.");
+    }
+
+    status.textContent =
+      "Video rendering started. Please wait...";
+
+    await checkRender(renderId);
+
+  } catch (error) {
+    status.textContent = "Error: " + error.message;
+  } finally {
+    button.disabled = false;
+  }
 }
+
+async function checkRender(renderId) {
+  const status = document.getElementById("status");
+  const video = document.getElementById("video");
+
+  for (let attempt = 0; attempt < 60; attempt++) {
+    await new Promise(resolve => setTimeout(resolve, 5000));
+
+    const response = await fetch(
+      "/api/render?id=" + encodeURIComponent(renderId)
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || "Status check failed");
+    }
+
+    const render = result.response;
+
+    status.textContent =
+      "Video status: " + (render.status || "processing");
+
+    if (render.status === "done") {
+      if (!render.url) {
+        throw new Error("Video completed but URL is missing.");
+      }
+
+      video.innerHTML = "";
+
+      const player = document.createElement("video");
+      player.controls = true;
+      player.playsInline = true;
+      player.src = render.url;
+
+      const link = document.createElement("a");
+      link.href = render.url;
+      link.download = "shopping-shorts.mp4";
+      link.textContent = "SAVE MP4 VIDEO";
+
+      video.append(player, link);
+
+      status.textContent = "Your video is ready!";
+
+      return;
+    }
+
+    if (render.status === "failed") {
+      throw new Error(render.error || "Video rendering failed.");
+    }
+  }
+
+  status.textContent =
+    "Rendering is taking longer. Check again using the render ID: " +
+    renderId;
+}
+
 </script>
+
 </body>
 </html>
