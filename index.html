@@ -418,10 +418,11 @@ async function startAutomation(){
     const audioUrl = await generateVoice(script);
 
     const id = await renderVideo(
-      script,
-      imageUrl,
-      audioUrl
-    );
+  script,
+  imageUrl,
+  audioUrl,
+  product
+);
 
     await waitForVideo(id);
 
