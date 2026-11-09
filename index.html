@@ -116,20 +116,39 @@ function selectProduct(name) {
  document.getElementById("status").innerText = name+" selected";
 }
 
-function createScript() {
+async function createScript() {
  const product = document.getElementById("keyword").value.trim();
- if(!product) {
-   alert("Please select a product first.");
+ const status = document.getElementById("status");
+ const scriptBox = document.getElementById("script");
+
+ if (!product) {
+   alert("Please enter a product name first.");
    return;
  }
- const script = `Discover the amazing ${product}!
-Looking for something useful and convenient?
-This product may be just what you need.
-Check the details and see if it is right for you!
-Shop smart today!`;
- document.getElementById("script").value = script;
- document.getElementById("status").innerText =
- "Advertisement draft created.";
+
+ status.innerText = "Creating your English advertisement...";
+
+ try {
+   const response = await fetch("/api/generate", {
+     method: "POST",
+     headers: {
+       "Content-Type": "application/json"
+     },
+     body: JSON.stringify({ product })
+   });
+
+   const data = await response.json();
+
+   if (!response.ok) {
+     throw new Error(data.error || "Script generation failed.");
+   }
+
+   scriptBox.value = data.script;
+   status.innerText = "English advertisement created successfully!";
+
+ } catch (error) {
+   status.innerText = "Error: " + error.message;
+ }
 }
 
 function createVideo() {
