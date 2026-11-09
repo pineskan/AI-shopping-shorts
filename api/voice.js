@@ -22,6 +22,9 @@ export default async function handler(req, res) {
     });
   }
 
+  const ingestBase =
+    `https://api.shotstack.io/ingest/${env}`;
+
   try {
     const { script, voice } = req.body || {};
 
@@ -40,7 +43,8 @@ export default async function handler(req, res) {
     const selectedVoice =
       voice === "male" ? "onyx" : "coral";
 
-    // 1. Generate MP3 with OpenAI
+    // STEP 1: Generate MP3 with OpenAI
+
     const speechResponse = await fetch(
       "https://api.openai.com/v1/audio/speech",
       {
@@ -69,9 +73,10 @@ export default async function handler(req, res) {
       await speechResponse.arrayBuffer()
     );
 
-    // 2. Request Shotstack upload URL
+    // STEP 2: Request Shotstack upload URL
+
     const uploadResponse = await fetch(
-      `https://api.shotstack.io/ingest/${env}/upload`,
+      `${ingestBase}/upload`,
       {
         method: "POST",
         headers: {
@@ -85,18 +90,23 @@ export default async function handler(req, res) {
 
     if (!uploadResponse.ok) {
       throw new Error(
-        uploadData.message || "Shotstack upload request failed"
+        JSON.stringify(uploadData)
       );
     }
+
+    const uploadId = uploadData.data?.id;
 
     const signedUrl =
       uploadData.data?.attributes?.url;
 
-    if (!signedUrl) {
-      throw new Error("Upload URL was not returned");
+    if (!uploadId || !signedUrl) {
+      throw new Error(
+        "Shotstack upload ID or signed URL missing"
+      );
     }
 
-    // 3. Upload MP3 to Shotstack
+    // STEP 3: Upload MP3 using FULL signed URL
+
     const putResponse = await fetch(signedUrl, {
       method: "PUT",
       headers: {
@@ -106,23 +116,94 @@ export default async function handler(req, res) {
     });
 
     if (!putResponse.ok) {
-      throw new Error("MP3 upload failed");
+      const error = await putResponse.text();
+
+      throw new Error(
+        "Shotstack MP3 upload failed: " + error
+      );
     }
 
-    // 4. Return public source URL
-    const audioUrl = signedUrl.split("?")[0];
+    // STEP 4: Wait until source is ready
+
+    let audioUrl = null;
+    let sourceStatus = "";
+
+    for (let i = 0; i < 30; i++) {
+
+      await new Promise(resolve =>
+        setTimeout(resolve, 2000)
+      );
+
+      const sourceResponse = await fetch(
+        `${ingestBase}/sources/${encodeURIComponent(uploadId)}`,
+        {
+          method: "GET",
+          headers: {
+            "Accept": "application/json",
+            "x-api-key": shotstackKey
+          }
+        }
+      );
+
+      const sourceData = await sourceResponse.json();
+
+      if (!sourceResponse.ok) {
+        throw new Error(
+          "Cannot check Shotstack source: " +
+          JSON.stringify(sourceData)
+        );
+      }
+
+      const attributes =
+        sourceData.data?.attributes || {};
+
+      sourceStatus = attributes.status || "";
+
+      if (sourceStatus === "ready") {
+
+        audioUrl = attributes.source;
+
+        if (!audioUrl) {
+          throw new Error(
+            "Source is ready but audio URL is missing"
+          );
+        }
+
+        break;
+      }
+
+      if (sourceStatus === "failed") {
+        throw new Error(
+          "Shotstack audio ingestion failed"
+        );
+      }
+    }
+
+    if (!audioUrl) {
+      throw new Error(
+        "Audio upload timed out. Last status: " +
+        sourceStatus
+      );
+    }
+
+    // STEP 5: Return usable audio URL
 
     return res.status(200).json({
       success: true,
       audioUrl,
-      voice: selectedVoice
+      voice: selectedVoice,
+      status: "ready"
     });
 
   } catch (error) {
-    console.error("Voice generation error:", error);
+
+    console.error(
+      "Voice generation error:",
+      error
+    );
 
     return res.status(500).json({
-      error: error.message
+      error: error.message || "Voice generation failed"
     });
   }
 }
