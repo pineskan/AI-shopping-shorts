@@ -6,277 +6,121 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#101827">
 <title>AI Shopping Shorts</title>
-
 <style>
-* { box-sizing: border-box; }
-
-body {
-  margin: 0;
-  padding: 20px;
-  background: #101827;
-  color: white;
-  font-family: Arial, sans-serif;
-}
-
-main {
-  max-width: 520px;
-  margin: 25px auto;
-}
-
-h1 {
-  text-align: center;
-  color: #16c784;
-}
-
-.subtitle {
-  text-align: center;
-  color: #bdc8d8;
-}
-
-.card {
-  background: #1d293b;
-  padding: 18px;
-  margin: 15px 0;
-  border-radius: 12px;
-}
-
-input, select, textarea {
-  width: 100%;
-  padding: 13px;
-  margin: 8px 0;
-  border-radius: 8px;
-  border: 1px solid #46546b;
-  background: #101827;
-  color: white;
-  font-size: 15px;
-}
-
-textarea { resize: vertical; }
-
-button {
-  width: 100%;
-  padding: 16px;
-  margin: 10px 0;
-  border: 0;
-  border-radius: 9px;
-  background: #16c784;
-  color: #071b14;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-button:disabled {
-  opacity: .5;
-  cursor: wait;
-}
-
-#startButton {
-  background: #16c784;
-  font-size: 19px;
-  padding: 20px;
-}
-
-.small {
-  color: #aab7ca;
-  font-size: 13px;
-  line-height: 1.6;
-}
-
-#status {
-  text-align: center;
-  margin: 20px 0;
-  color: #16c784;
-  overflow-wrap: anywhere;
-}
-
-video {
-  width: 100%;
-  margin-top: 15px;
-  border-radius: 10px;
-}
-
-a { color: #16c784; }
-
-#video a {
-  display: block;
-  margin: 15px 0;
-  font-weight: bold;
-  text-align: center;
-}
+*{box-sizing:border-box}
+body{margin:0;padding:20px;background:#101827;color:white;font-family:Arial,sans-serif}
+main{max-width:520px;margin:25px auto}
+h1{text-align:center;color:#16c784}
+.subtitle{text-align:center;color:#bdc8d8}
+.card{background:#1d293b;padding:18px;margin:15px 0;border-radius:12px}
+input,select,textarea{width:100%;padding:13px;margin:8px 0;border-radius:8px;border:1px solid #46546b;background:#101827;color:white;font-size:15px}
+button{width:100%;padding:16px;margin:10px 0;border:0;border-radius:9px;background:#16c784;color:#071b14;font-size:16px;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.5}
+#startButton{font-size:19px;padding:20px}
+#status{text-align:center;margin:20px 0;color:#16c784;overflow-wrap:anywhere}
+.small{color:#aab7ca;font-size:13px;line-height:1.6}
+video{width:100%;margin-top:15px;border-radius:10px}
+a{color:#16c784;display:block;margin:15px 0;text-align:center}
 </style>
 </head>
-
 <body>
 <main>
-
 <h1>AI Shopping Shorts</h1>
 <p class="subtitle">One-Click AI Video Creator</p>
 
 <div class="card">
-  <h3>Product Information</h3>
-
-  <label>Product Name</label>
-  <input
-    id="product"
-    placeholder="Example: Wireless Earbuds"
-  >
-
-  <label>Product Image URL</label>
-  <input
-    id="imageUrl"
-    type="url"
-    placeholder="https://example.com/product.jpg"
-  >
-
-  <p class="small">
-    Enter a publicly accessible HTTPS product image URL.
-  </p>
+<h3>Product Information</h3>
+<input id="product" placeholder="Product name">
+<input id="imageUrl" type="url" placeholder="Public HTTPS product image URL">
 </div>
 
 <div class="card">
-  <h3>Advertisement Settings</h3>
-
-  <label>English Voice Preview</label>
-  <select id="voice">
-    <option value="female">Female Voice</option>
-    <option value="male">Male Voice</option>
-  </select>
-
-  <label>Advertisement Script</label>
-  <textarea
-    id="script"
-    rows="6"
-    placeholder="AI-generated English advertisement..."
-  ></textarea>
-
-  <button onclick="previewVoice()">
-    PREVIEW VOICE
-  </button>
+<h3>Advertisement Settings</h3>
+<select id="voice">
+<option value="female">Female Voice</option>
+<option value="male">Male Voice</option>
+</select>
+<textarea id="script" rows="6" placeholder="AI advertisement script"></textarea>
+<button onclick="previewVoice()">PREVIEW VOICE</button>
 </div>
 
 <div class="card">
-  <h3>Video Production</h3>
-
-  <label>Optional MP3 Voice URL</label>
-  <input
-    id="audioUrl"
-    type="url"
-    placeholder="https://example.com/voice.mp3"
-  >
-
-  <p class="small">
-    An MP3 URL is required for voice narration in the
-    finished video. Browser voice preview is separate.
-  </p>
-
-  <button id="startButton" onclick="startAutomation()">
-    START AUTOMATION
-  </button>
-
-  <div id="video"></div>
+<h3>Video Production</h3>
+<p class="small">AI voice and video will be generated automatically.</p>
+<button id="startButton" onclick="startAutomation()">
+START AUTOMATION
+</button>
+<div id="video"></div>
 </div>
 
 <div id="status">Ready to start</div>
-
 </main>
 
 <script>
-
 const $ = id => document.getElementById(id);
-
 let busy = false;
 
-function setStatus(message) {
+function status(message){
   $("status").textContent = message;
 }
 
-async function postJSON(url, body) {
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(body)
+async function post(url,body){
+  const response = await fetch(url,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(body)
   });
-
   const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.error || "Request failed");
-  }
-
+  if(!response.ok) throw new Error(data.error || "Request failed");
   return data;
 }
 
-// Generate English advertisement
-async function generateScript(product) {
-  setStatus("1/3 Creating English advertisement...");
+async function getJSON(url){
+  const response = await fetch(url);
+  const data = await response.json();
+  if(!response.ok) throw new Error(data.error || "Request failed");
+  return data;
+}
 
-  const data = await postJSON("/api/generate", {
-    product
-  });
-
-  if (!data.script) {
-    throw new Error("Advertisement script was not returned.");
-  }
-
+async function generateScript(product){
+  status("1/4 Generating English advertisement...");
+  const data = await post("/api/generate",{product});
+  if(!data.script) throw new Error("No advertisement script returned");
   $("script").value = data.script;
-
   return data.script;
 }
 
-// Create Shotstack video
-async function renderVideo(script, imageUrl, audioUrl) {
-  setStatus("2/3 Sending video to Shotstack...");
-
-  const data = await postJSON("/api/render", {
+async function generateVoice(script){
+  status("2/4 Generating AI voice...");
+  const data = await post("/api/voice",{
     script,
-    imageUrl,
-    audioUrl
+    voice:$("voice").value
   });
-
-  const renderId = data.response?.id;
-
-  if (!renderId) {
-    throw new Error("Render ID was not returned.");
-  }
-
-  return renderId;
+  if(!data.audioUrl) throw new Error("No audio URL returned");
+  return data.audioUrl;
 }
 
-// Check video rendering
-async function waitForVideo(renderId) {
-  setStatus("3/3 Rendering your video...");
+async function renderVideo(script,imageUrl,audioUrl){
+  status("3/4 Sending video and voice to Shotstack...");
+  const data = await post("/api/render",{
+    script,imageUrl,audioUrl
+  });
+  const id = data.response?.id;
+  if(!id) throw new Error("Render ID missing");
+  return id;
+}
 
-  for (let i = 0; i < 60; i++) {
-
-    await new Promise(resolve =>
-      setTimeout(resolve, 5000)
+async function waitForVideo(id){
+  for(let i=0;i<60;i++){
+    await new Promise(resolve=>setTimeout(resolve,5000));
+    const data = await getJSON(
+      "/api/render?id="+encodeURIComponent(id)
     );
-
-    const response = await fetch(
-      "/api/render?id=" + encodeURIComponent(renderId)
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || "Video status failed.");
-    }
-
     const render = data.response;
+    status("4/4 Video status: "+(render.status || "processing"));
 
-    setStatus(
-      "Rendering video: " +
-      (render.status || "processing")
-    );
-
-    if (render.status === "done") {
-
-      if (!render.url) {
-        throw new Error("Video URL is missing.");
-      }
+    if(render.status==="done"){
+      if(!render.url) throw new Error("Video URL missing");
 
       const player = document.createElement("video");
       player.controls = true;
@@ -286,48 +130,33 @@ async function waitForVideo(renderId) {
       const link = document.createElement("a");
       link.href = render.url;
       link.download = "shopping-shorts.mp4";
-      link.textContent = "SAVE YOUR MP4 VIDEO";
+      link.textContent = "SAVE MP4 VIDEO";
 
-      $("video").replaceChildren(player, link);
-
-      setStatus("SUCCESS! Your video is ready.");
-
+      $("video").replaceChildren(player,link);
+      status("SUCCESS! Your video is ready.");
       return;
     }
 
-    if (render.status === "failed") {
-      throw new Error(
-        render.error || "Video rendering failed."
-      );
+    if(render.status==="failed"){
+      throw new Error(render.error || "Video rendering failed");
     }
   }
-
-  throw new Error(
-    "Rendering is taking longer. Render ID: " + renderId
-  );
+  throw new Error("Rendering timed out. Please try again.");
 }
 
-// ONE CLICK AUTOMATION
-async function startAutomation() {
-
-  if (busy) return;
+async function startAutomation(){
+  if(busy) return;
 
   const product = $("product").value.trim();
   const imageUrl = $("imageUrl").value.trim();
-  const audioUrl = $("audioUrl").value.trim();
 
-  if (!product) {
+  if(!product){
     alert("Enter a product name.");
     return;
   }
 
-  if (!imageUrl.startsWith("https://")) {
+  if(!imageUrl.startsWith("https://")){
     alert("Enter a public HTTPS product image URL.");
-    return;
-  }
-
-  if (audioUrl && !audioUrl.startsWith("https://")) {
-    alert("MP3 URL must start with HTTPS.");
     return;
   }
 
@@ -335,62 +164,34 @@ async function startAutomation() {
   $("startButton").disabled = true;
   $("video").replaceChildren();
 
-  try {
-
-    // Step 1: AI script
+  try{
     const script = await generateScript(product);
-
-    // Step 2: Shotstack render
-    const renderId = await renderVideo(
-      script,
-      imageUrl,
-      audioUrl
-    );
-
-    // Step 3: Wait for completed video
-    await waitForVideo(renderId);
-
-  } catch (error) {
-
-    setStatus("ERROR: " + error.message);
-
-  } finally {
-
+    const audioUrl = await generateVoice(script);
+    const id = await renderVideo(script,imageUrl,audioUrl);
+    await waitForVideo(id);
+  }catch(error){
+    status("ERROR: "+error.message);
+  }finally{
     busy = false;
     $("startButton").disabled = false;
-
   }
 }
 
-// Browser voice preview
-function previewVoice() {
-
+function previewVoice(){
   const script = $("script").value.trim();
-
-  if (!script) {
+  if(!script){
     alert("Generate your script first.");
     return;
   }
 
-  if (!("speechSynthesis" in window)) {
-    alert("Voice preview is not supported by this browser.");
-    return;
-  }
-
   const utterance = new SpeechSynthesisUtterance(script);
-
   utterance.lang = "en-US";
   utterance.rate = 0.95;
-  utterance.pitch =
-    $("voice").value === "female" ? 1.15 : 0.85;
+  utterance.pitch = $("voice").value==="female" ? 1.15 : 0.85;
 
   speechSynthesis.cancel();
   speechSynthesis.speak(utterance);
-
-  setStatus("English voice preview is playing.");
 }
-
 </script>
-
 </body>
 </html>
