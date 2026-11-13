@@ -56,10 +56,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    // =====================================
     // 1. CHECK RENDER STATUS
-    // =====================================
-
     if (req.method === "GET") {
       const id = req.query?.id;
 
@@ -74,13 +71,29 @@ export default async function handler(req, res) {
         `/render/${encodeURIComponent(id)}`
       );
 
-      return res.status(200).json(data);
+      const render = data?.response || {};
+      const isDone = render.status === "done";
+      const isFailed = render.status === "failed";
+
+      return res.status(200).json({
+        success: !isFailed,
+        renderId: render.id || id,
+        status: render.status || "unknown",
+        downloadReady: Boolean(isDone && render.url),
+        videoUrl: isDone ? render.url || null : null,
+        downloadUrl: isDone ? render.url || null : null,
+        error: isFailed
+          ? render.error || "Video rendering failed"
+          : null,
+        message: isDone
+          ? "Video rendering completed"
+          : isFailed
+            ? "Video rendering failed"
+            : "Video is still rendering"
+      });
     }
 
-    // =====================================
     // 2. RECEIVE REQUEST
-    // =====================================
-
     const body =
       typeof req.body === "string"
         ? JSON.parse(req.body)
@@ -107,6 +120,13 @@ export default async function handler(req, res) {
     const productName = String(product).trim();
     const scriptText = String(script).trim();
 
+    if (!productName || !scriptText) {
+      return res.status(400).json({
+        success: false,
+        error: "Product and script cannot be empty"
+      });
+    }
+
     if (scriptText.length > 2500) {
       return res.status(400).json({
         success: false,
@@ -128,10 +148,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // =====================================
-    // 3. SETTINGS
-    // =====================================
-
+    // 3. VOICE SETTINGS
     const gender =
       voiceGender === "male" ? "male" : "female";
 
@@ -140,9 +157,9 @@ export default async function handler(req, res) {
       (gender === "female" ? "Charlotte" : "Brian");
 
     const useMusic = music !== false;
-
     const duration = 12;
 
+    // 4. VIDEO STYLES
     const styles = {
       cinematic: `
         Premium Hollywood-style product commercial.
@@ -178,10 +195,7 @@ export default async function handler(req, res) {
         ? "A photorealistic professional female commercial model"
         : "A photorealistic professional male commercial model";
 
-    // =====================================
-    // 4. AI VIDEO PROMPT
-    // =====================================
-
+    // 5. AI VIDEO PROMPT
     const videoPrompt = `
       Create a premium vertical product advertisement.
 
@@ -225,10 +239,7 @@ export default async function handler(req, res) {
       ${scriptText.slice(0, 700)}
     `;
 
-    // =====================================
-    // 5. AI VIDEO ASSET
-    // =====================================
-
+    // 6. AI VIDEO ASSET
     const videoAsset = {
       type: "video",
       prompt: videoPrompt,
@@ -249,10 +260,7 @@ export default async function handler(req, res) {
       }
     };
 
-    // =====================================
-    // 6. AI VOICE ASSET
-    // =====================================
-
+    // 7. AI VOICE ASSET
     const voiceAsset = audioUrl
       ? {
           type: "audio",
@@ -268,10 +276,7 @@ export default async function handler(req, res) {
           }
         };
 
-    // =====================================
-    // 7. BACKGROUND MUSIC ASSET
-    // =====================================
-
+    // 8. BACKGROUND MUSIC
     const musicAsset = {
       type: "audio",
       prompt: `
@@ -287,13 +292,10 @@ export default async function handler(req, res) {
       }
     };
 
-    // =====================================
-    // 8. BUILD TIMELINE
-    // =====================================
-
+    // 9. BUILD TIMELINE
     const tracks = [];
 
-    // TOP TRACK: AUTOMATIC CAPTIONS
+    // AUTOMATIC CAPTIONS
     tracks.push({
       clips: [
         {
@@ -367,7 +369,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // BOTTOM TRACK: AI VIDEO
+    // AI VIDEO TRACK
     tracks.push({
       clips: [
         {
@@ -380,10 +382,7 @@ export default async function handler(req, res) {
       ]
     });
 
-    // =====================================
-    // 9. FULL HD VERTICAL OUTPUT
-    // =====================================
-
+    // 10. FULL HD OUTPUT
     const edit = {
       timeline: {
         background: "#000000",
@@ -399,10 +398,7 @@ export default async function handler(req, res) {
       }
     };
 
-    // =====================================
-    // 10. SUBMIT TO SHOTSTACK
-    // =====================================
-
+    // 11. SUBMIT TO SHOTSTACK
     const data = await shotstack("/render", {
       method: "POST",
       body: JSON.stringify(edit)
@@ -420,11 +416,8 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       success: true,
-
       message: "AI Shopping Shorts rendering started",
-
       renderId,
-
       product: productName,
 
       video: {
@@ -444,7 +437,8 @@ export default async function handler(req, res) {
         automaticCaptions: true
       },
 
-      status: "queued"
+      status: "queued",
+      statusEndpoint: `?id=${encodeURIComponent(renderId)}`
     });
 
   } catch (error) {
