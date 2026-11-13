@@ -1,5 +1,4 @@
 
-
 export default async function handler(req, res) {
   const apiKey = process.env.SHOTSTACK_API_KEY;
   const env = process.env.SHOTSTACK_ENV || "stage";
@@ -57,7 +56,10 @@ export default async function handler(req, res) {
   }
 
   try {
-    // GET: Check render status
+    // =====================================
+    // 1. CHECK RENDER STATUS
+    // =====================================
+
     if (req.method === "GET") {
       const id = req.query?.id;
 
@@ -75,7 +77,15 @@ export default async function handler(req, res) {
       return res.status(200).json(data);
     }
 
-    // POST: Create video
+    // =====================================
+    // 2. RECEIVE REQUEST
+    // =====================================
+
+    const body =
+      typeof req.body === "string"
+        ? JSON.parse(req.body)
+        : req.body || {};
+
     const {
       product,
       script,
@@ -85,7 +95,7 @@ export default async function handler(req, res) {
       voice,
       videoStyle = "cinematic",
       music = true
-    } = req.body || {};
+    } = body;
 
     if (!product || !script) {
       return res.status(400).json({
@@ -94,7 +104,10 @@ export default async function handler(req, res) {
       });
     }
 
-    if (String(script).length > 2500) {
+    const productName = String(product).trim();
+    const scriptText = String(script).trim();
+
+    if (scriptText.length > 2500) {
       return res.status(400).json({
         success: false,
         error: "Script is too long. Maximum 2500 characters."
@@ -115,39 +128,49 @@ export default async function handler(req, res) {
       });
     }
 
-    const productName = String(product).trim();
-    const gender = voiceGender === "male" ? "male" : "female";
+    // =====================================
+    // 3. SETTINGS
+    // =====================================
+
+    const gender =
+      voiceGender === "male" ? "male" : "female";
 
     const selectedVoice =
       voice ||
-      (gender === "female" ? "Charlotte" : "George");
+      (gender === "female" ? "Charlotte" : "Brian");
+
+    const useMusic = music !== false;
+
+    const duration = 12;
 
     const styles = {
       cinematic: `
-        Premium cinematic product commercial.
-        Photorealistic professional human model.
-        Dramatic studio lighting.
-        Smooth camera movement.
-        Natural expressions and realistic skin.
-        Premium advertising cinematography.
+        Premium Hollywood-style product commercial.
+        Photorealistic human model.
+        Dramatic cinematic lighting.
+        Smooth professional camera movement.
+        Realistic skin and natural expressions.
+        Beautiful commercial cinematography.
       `,
+
       luxury: `
-        Luxury fashion commercial.
+        Luxury fashion advertising.
         Elegant professional human model.
         High-end studio lighting.
-        Sophisticated camera movement.
-        Premium editorial atmosphere.
+        Premium editorial cinematography.
+        Sophisticated movements.
       `,
+
       futuristic: `
         Futuristic technology commercial.
         Photorealistic human model.
         Modern architectural environment.
         Dramatic cinematic lighting.
-        Premium science-fiction atmosphere.
+        Premium futuristic atmosphere.
       `
     };
 
-    const selectedStyle =
+    const style =
       styles[videoStyle] || styles.cinematic;
 
     const modelDescription =
@@ -155,51 +178,81 @@ export default async function handler(req, res) {
         ? "A photorealistic professional female commercial model"
         : "A photorealistic professional male commercial model";
 
+    // =====================================
+    // 4. AI VIDEO PROMPT
+    // =====================================
+
     const videoPrompt = `
-      Create a premium product advertisement.
+      Create a premium vertical product advertisement.
 
-      PRODUCT: ${productName}
+      PRODUCT:
+      ${productName}
 
-      MODEL:
+      HUMAN MODEL:
       ${modelDescription}.
 
-      STYLE:
-      ${selectedStyle}
+      VISUAL STYLE:
+      ${style}
 
-      ACTION:
-      The model naturally presents and interacts with
-      the product.
+      STORY:
+      Show the model naturally presenting and interacting
+      with the product.
 
       Begin with an impressive cinematic opening.
-      The camera moves smoothly toward the model.
-      Cut to a detailed close-up of the product.
-      Cut back to the model for a memorable final shot.
+      Show the model in a professional environment.
+      Move the camera toward a detailed product close-up.
+      Finish with a memorable advertising shot.
 
+      CAMERA:
+      Smooth dolly movement.
+      Cinematic tracking.
+      Professional commercial framing.
+      Natural human movement.
+
+      QUALITY:
+      Photorealistic.
+      Detailed textures.
+      Realistic lighting.
+      Premium advertising production.
+
+      IMPORTANT:
       Keep the product recognizable.
-      Use realistic hands and facial expressions.
-      Do not generate subtitles, captions, logos,
+      Avoid distorted hands and faces.
+      Do not generate subtitles, logos,
       watermarks or random text.
 
-      Advertising context:
-      ${String(script).slice(0, 700)}
+      AD CONTEXT:
+      ${scriptText.slice(0, 700)}
     `;
 
-    // AI video
+    // =====================================
+    // 5. AI VIDEO ASSET
+    // =====================================
+
     const videoAsset = {
       type: "video",
       prompt: videoPrompt,
+
       model: imageUrl
         ? "seedance-2.0-image-to-video"
         : "seedance-2.0-text-to-video",
+
       options: {
         resolution: "1080p",
         aspectRatio: "9:16",
+        duration: String(duration),
         generateAudio: false,
-        ...(imageUrl ? { startSrc: imageUrl } : {})
+
+        ...(imageUrl
+          ? { startSrc: imageUrl }
+          : {})
       }
     };
 
-    // AI voice
+    // =====================================
+    // 6. AI VOICE ASSET
+    // =====================================
+
     const voiceAsset = audioUrl
       ? {
           type: "audio",
@@ -207,7 +260,7 @@ export default async function handler(req, res) {
         }
       : {
           type: "audio",
-          prompt: String(script),
+          prompt: scriptText,
           model: "elevenlabs-multilingual-v2",
           options: {
             voice: selectedVoice,
@@ -215,14 +268,18 @@ export default async function handler(req, res) {
           }
         };
 
-    // Background music
+    // =====================================
+    // 7. BACKGROUND MUSIC ASSET
+    // =====================================
+
     const musicAsset = {
       type: "audio",
       prompt: `
         Premium cinematic advertising soundtrack.
-        Elegant modern electronic orchestration.
-        Uplifting and sophisticated atmosphere.
-        Instrumental only. No vocals.
+        Modern elegant electronic orchestration.
+        Uplifting professional commercial atmosphere.
+        Instrumental only.
+        No vocals.
       `,
       model: "elevenlabs-music",
       options: {
@@ -230,91 +287,109 @@ export default async function handler(req, res) {
       }
     };
 
-    const duration = 15;
+    // =====================================
+    // 8. BUILD TIMELINE
+    // =====================================
 
-    // Tracks are layered from top to bottom.
-    const tracks = [
-      // Automatic captions synced to the voice
-      {
+    const tracks = [];
+
+    // TOP TRACK: AUTOMATIC CAPTIONS
+    tracks.push({
+      clips: [
+        {
+          asset: {
+            type: "rich-caption",
+            src: "alias://voiceover",
+
+            font: {
+              family: "Roboto",
+              size: 46,
+              weight: "700",
+              color: "#ffffff"
+            },
+
+            background: {
+              color: "#000000",
+              opacity: 0.55,
+              borderRadius: 8,
+              wrap: true,
+              padding: 10
+            },
+
+            stroke: {
+              width: 2,
+              color: "#000000",
+              opacity: 0.8
+            },
+
+            align: {
+              horizontal: "center",
+              vertical: "middle"
+            },
+
+            animation: {
+              style: "highlight",
+              direction: "up"
+            }
+          },
+
+          start: 0,
+          length: "end",
+          position: "bottom"
+        }
+      ]
+    });
+
+    // AI VOICE TRACK
+    tracks.push({
+      clips: [
+        {
+          alias: "voiceover",
+          asset: voiceAsset,
+          start: 0,
+          length: "auto",
+          volume: 1
+        }
+      ]
+    });
+
+    // BACKGROUND MUSIC TRACK
+    if (useMusic) {
+      tracks.push({
         clips: [
           {
-            asset: {
-              type: "rich-caption",
-              src: "alias://voice",
-              font: {
-                family: "Roboto",
-                size: 46,
-                weight: "700",
-                color: "#ffffff"
-              },
-              background: {
-                color: "#000000",
-                opacity: 0.5,
-                padding: 12,
-                borderRadius: 10
-              },
-              align: {
-                horizontal: "center",
-                vertical: "middle"
-              },
-              animation: {
-                style: "highlight",
-                direction: "up"
-              }
-            },
+            asset: musicAsset,
             start: 0,
             length: "end",
-            position: "bottom"
+            volume: 0.16
           }
         ]
-      },
+      });
+    }
 
-      // Background music
-      ...(music
-        ? [{
-            clips: [
-              {
-                asset: musicAsset,
-                start: 0,
-                length: "end",
-                volume: 0.16
-              }
-            ]
-          }]
-        : []),
+    // BOTTOM TRACK: AI VIDEO
+    tracks.push({
+      clips: [
+        {
+          asset: videoAsset,
+          start: 0,
+          length: duration,
+          fit: "crop",
+          volume: 0
+        }
+      ]
+    });
 
-      // AI voice
-      {
-        clips: [
-          {
-            alias: "voice",
-            asset: voiceAsset,
-            start: 0,
-            length: "auto",
-            volume: 1
-          }
-        ]
-      },
+    // =====================================
+    // 9. FULL HD VERTICAL OUTPUT
+    // =====================================
 
-      // AI cinematic video
-      {
-        clips: [
-          {
-            asset: videoAsset,
-            start: 0,
-            length: duration,
-            fit: "crop"
-          }
-        ]
-      }
-    ];
-
-    // Full HD vertical output
     const edit = {
       timeline: {
         background: "#000000",
         tracks
       },
+
       output: {
         format: "mp4",
         resolution: "1080",
@@ -324,7 +399,10 @@ export default async function handler(req, res) {
       }
     };
 
-    // Submit render
+    // =====================================
+    // 10. SUBMIT TO SHOTSTACK
+    // =====================================
+
     const data = await shotstack("/render", {
       method: "POST",
       body: JSON.stringify(edit)
@@ -342,27 +420,39 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       success: true,
-      message: "AI Shopping Shorts 2.0 rendering started",
+
+      message: "AI Shopping Shorts rendering started",
+
       renderId,
+
       product: productName,
+
       video: {
+        width: 1080,
+        height: 1920,
         resolution: "1080x1920",
         aspectRatio: "9:16",
         fps: 30,
         format: "mp4"
       },
+
       ai: {
         humanModel: true,
         cinematicVideo: true,
         voice: selectedVoice,
-        backgroundMusic: Boolean(music),
+        backgroundMusic: useMusic,
         automaticCaptions: true
       },
+
       status: "queued"
     });
 
   } catch (error) {
-    console.error("AI Shopping Shorts Error:", error);
+    console.error(
+      "AI Shopping Shorts Error:",
+      error.message,
+      error.details
+    );
 
     return res.status(error.status || 500).json({
       success: false,
