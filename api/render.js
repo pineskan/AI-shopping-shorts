@@ -1,22 +1,26 @@
 
+
 export default async function handler(req, res) {
   const apiKey = process.env.SHOTSTACK_API_KEY;
   const env = process.env.SHOTSTACK_ENV || "stage";
 
   if (!["GET", "POST"].includes(req.method)) {
     return res.status(405).json({
+      success: false,
       error: "Method not allowed"
     });
   }
 
   if (!apiKey) {
     return res.status(500).json({
+      success: false,
       error: "SHOTSTACK_API_KEY is missing"
     });
   }
 
   if (!["stage", "v1"].includes(env)) {
     return res.status(500).json({
+      success: false,
       error: "Invalid SHOTSTACK_ENV"
     });
   }
@@ -46,7 +50,6 @@ export default async function handler(req, res) {
 
       error.status = response.status;
       error.details = data;
-
       throw error;
     }
 
@@ -54,15 +57,13 @@ export default async function handler(req, res) {
   }
 
   try {
-    // =====================================
-    // 1. CHECK VIDEO RENDER STATUS
-    // =====================================
-
+    // GET: Check render status
     if (req.method === "GET") {
       const id = req.query?.id;
 
       if (!id) {
         return res.status(400).json({
+          success: false,
           error: "Render ID is required"
         });
       }
@@ -74,10 +75,7 @@ export default async function handler(req, res) {
       return res.status(200).json(data);
     }
 
-    // =====================================
-    // 2. RECEIVE VIDEO REQUEST
-    // =====================================
-
+    // POST: Create video
     const {
       product,
       script,
@@ -91,132 +89,102 @@ export default async function handler(req, res) {
 
     if (!product || !script) {
       return res.status(400).json({
+        success: false,
         error: "Product and script are required"
       });
     }
 
     if (String(script).length > 2500) {
       return res.status(400).json({
+        success: false,
         error: "Script is too long. Maximum 2500 characters."
       });
     }
 
-    if (
-      imageUrl &&
-      !/^https:\/\//i.test(imageUrl)
-    ) {
+    if (imageUrl && !/^https:\/\//i.test(imageUrl)) {
       return res.status(400).json({
+        success: false,
         error: "Image URL must use HTTPS"
       });
     }
 
-    if (
-      audioUrl &&
-      !/^https:\/\//i.test(audioUrl)
-    ) {
+    if (audioUrl && !/^https:\/\//i.test(audioUrl)) {
       return res.status(400).json({
+        success: false,
         error: "Audio URL must use HTTPS"
       });
     }
 
-    // =====================================
-    // 3. AI MODEL AND CINEMATIC PROMPT
-    // =====================================
-
     const productName = String(product).trim();
+    const gender = voiceGender === "male" ? "male" : "female";
 
-    const gender =
-      voiceGender === "male" ? "male" : "female";
+    const selectedVoice =
+      voice ||
+      (gender === "female" ? "Charlotte" : "George");
 
-    const modelDescription =
-      gender === "female"
-        ? "A photorealistic professional female commercial model, elegant appearance, natural facial expressions, confident personality"
-        : "A photorealistic professional male commercial model, elegant appearance, natural facial expressions, confident personality";
-
-    const stylePrompts = {
+    const styles = {
       cinematic: `
-        Premium Hollywood-style commercial,
-        photorealistic human model,
-        dramatic cinematic lighting,
-        sophisticated camera movement,
-        shallow depth of field,
-        realistic skin texture,
-        premium commercial production,
-        beautiful composition,
-        rich cinematic atmosphere.
+        Premium cinematic product commercial.
+        Photorealistic professional human model.
+        Dramatic studio lighting.
+        Smooth camera movement.
+        Natural expressions and realistic skin.
+        Premium advertising cinematography.
       `,
-
       luxury: `
-        Luxury fashion commercial,
-        elegant professional human model,
-        high-end studio lighting,
-        premium editorial cinematography,
-        sophisticated movements,
-        refined visual atmosphere,
-        photorealistic details.
+        Luxury fashion commercial.
+        Elegant professional human model.
+        High-end studio lighting.
+        Sophisticated camera movement.
+        Premium editorial atmosphere.
       `,
-
       futuristic: `
-        Futuristic technology commercial,
-        photorealistic human model,
-        modern architectural environment,
-        dramatic lighting,
-        sophisticated camera movement,
-        premium science-fiction aesthetic,
-        realistic product presentation.
+        Futuristic technology commercial.
+        Photorealistic human model.
+        Modern architectural environment.
+        Dramatic cinematic lighting.
+        Premium science-fiction atmosphere.
       `
     };
 
     const selectedStyle =
-      stylePrompts[videoStyle] ||
-      stylePrompts.cinematic;
+      styles[videoStyle] || styles.cinematic;
+
+    const modelDescription =
+      gender === "female"
+        ? "A photorealistic professional female commercial model"
+        : "A photorealistic professional male commercial model";
 
     const videoPrompt = `
-      Create a premium vertical 9:16 product advertisement.
+      Create a premium product advertisement.
 
       PRODUCT: ${productName}
 
-      HUMAN MODEL:
-      ${modelDescription}
+      MODEL:
+      ${modelDescription}.
 
-      VISUAL DIRECTION:
+      STYLE:
       ${selectedStyle}
 
-      STORY:
-      The human model naturally interacts with and presents
-      the product in a professional commercial setting.
+      ACTION:
+      The model naturally presents and interacts with
+      the product.
 
-      Show an impressive opening shot,
-      a cinematic medium shot of the model,
-      a beautiful close-up of the product,
-      and a memorable final advertising shot.
+      Begin with an impressive cinematic opening.
+      The camera moves smoothly toward the model.
+      Cut to a detailed close-up of the product.
+      Cut back to the model for a memorable final shot.
 
-      CAMERA:
-      Smooth dolly movement,
-      cinematic tracking,
-      controlled camera motion,
-      professional commercial framing.
-
-      QUALITY:
-      Photorealistic,
-      detailed textures,
-      realistic lighting,
-      premium advertising cinematography.
-
-      IMPORTANT:
-      Do not generate subtitles,
-      captions, logos or random text.
       Keep the product recognizable.
-      Avoid distorted hands and faces.
+      Use realistic hands and facial expressions.
+      Do not generate subtitles, captions, logos,
+      watermarks or random text.
 
-      ADVERTISING SCRIPT CONTEXT:
-      ${String(script).slice(0, 1000)}
+      Advertising context:
+      ${String(script).slice(0, 700)}
     `;
 
-    // =====================================
-    // 4. AI VIDEO ASSET
-    // =====================================
-
+    // AI video
     const videoAsset = {
       type: "video",
       prompt: videoPrompt,
@@ -227,20 +195,11 @@ export default async function handler(req, res) {
         resolution: "1080p",
         aspectRatio: "9:16",
         generateAudio: false,
-        ...(imageUrl
-          ? { startSrc: imageUrl }
-          : {})
+        ...(imageUrl ? { startSrc: imageUrl } : {})
       }
     };
 
-    // =====================================
-    // 5. AI ENGLISH VOICE
-    // =====================================
-
-    const selectedVoice =
-      voice ||
-      (gender === "female" ? "Charlotte" : "Brian");
-
+    // AI voice
     const voiceAsset = audioUrl
       ? {
           type: "audio",
@@ -252,26 +211,18 @@ export default async function handler(req, res) {
           model: "elevenlabs-multilingual-v2",
           options: {
             voice: selectedVoice,
-            language: "en",
-            stability: 0.48,
-            similarityBoost: 0.78
+            language: "en"
           }
         };
 
-    // =====================================
-    // 6. CINEMATIC BACKGROUND MUSIC
-    // =====================================
-
+    // Background music
     const musicAsset = {
       type: "audio",
       prompt: `
-        Premium cinematic advertising soundtrack,
-        elegant modern electronic orchestration,
-        uplifting atmosphere,
-        sophisticated sound design,
-        professional product commercial music,
-        instrumental only,
-        no vocals.
+        Premium cinematic advertising soundtrack.
+        Elegant modern electronic orchestration.
+        Uplifting and sophisticated atmosphere.
+        Instrumental only. No vocals.
       `,
       model: "elevenlabs-music",
       options: {
@@ -279,97 +230,73 @@ export default async function handler(req, res) {
       }
     };
 
-    // =====================================
-    // 7. SPLIT SCRIPT FOR CAPTIONS
-    // =====================================
+    const duration = 15;
 
-    const sentences =
-      String(script)
-        .replace(/\s+/g, " ")
-        .match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [script];
-
-    const groups = [[], [], [], []];
-
-    sentences.forEach((sentence, index) => {
-      const target = Math.min(
-        3,
-        Math.floor(index * 4 / sentences.length)
-      );
-
-      groups[target].push(sentence.trim());
-    });
-
-    const duration = 12;
-    const sceneDuration = 3;
-
-    const captionClips = groups
-      .filter(group => group.length)
-      .map((group, index) => ({
-        asset: {
-          type: "rich-text",
-          text: group.join(" "),
-          font: {
-            family: "Montserrat",
-            size: 48,
-            weight: "700",
-            color: "#ffffff"
-          },
-          align: {
-            horizontal: "center",
-            vertical: "middle"
-          },
-          background: {
-            color: "#000000",
-            opacity: 0.48
-          }
-        },
-        start: index * sceneDuration,
-        length: sceneDuration,
-        position: "bottom",
-        transition: {
-          in: "fade",
-          out: "fade"
-        }
-      }));
-
-    // =====================================
-    // 8. BUILD VIDEO TIMELINE
-    // =====================================
-
+    // Tracks are layered from top to bottom.
     const tracks = [
-      // AI VOICE
+      // Automatic captions synced to the voice
       {
         clips: [
           {
-            asset: voiceAsset,
+            asset: {
+              type: "rich-caption",
+              src: "alias://voice",
+              font: {
+                family: "Roboto",
+                size: 46,
+                weight: "700",
+                color: "#ffffff"
+              },
+              background: {
+                color: "#000000",
+                opacity: 0.5,
+                padding: 12,
+                borderRadius: 10
+              },
+              align: {
+                horizontal: "center",
+                vertical: "middle"
+              },
+              animation: {
+                style: "highlight",
+                direction: "up"
+              }
+            },
             start: 0,
-            length: audioUrl ? "end" : "auto",
-            volume: 1
+            length: "end",
+            position: "bottom"
           }
         ]
       },
 
-      // CINEMATIC MUSIC
+      // Background music
       ...(music
         ? [{
             clips: [
               {
                 asset: musicAsset,
                 start: 0,
-                length: duration,
-                volume: 0.16,
-                effect: "fadeOut"
+                length: "end",
+                volume: 0.16
               }
             ]
           }]
         : []),
 
-      // CAPTIONS
+      // AI voice
       {
-        clips: captionClips
+        clips: [
+          {
+            alias: "voice",
+            asset: voiceAsset,
+            start: 0,
+            length: "auto",
+            volume: 1
+          }
+        ]
       },
 
-      // AI GENERATED VIDEO
+      // AI cinematic video
       {
         clips: [
           {
@@ -382,30 +309,22 @@ export default async function handler(req, res) {
       }
     ];
 
-    // =====================================
-    // 9. FULL HD VIDEO OUTPUT
-    // =====================================
-
+    // Full HD vertical output
     const edit = {
       timeline: {
         background: "#000000",
         tracks
       },
-
       output: {
         format: "mp4",
         resolution: "1080",
         aspectRatio: "9:16",
         fps: 30,
-        quality: "high",
-        scaleTo: "1080"
+        quality: "high"
       }
     };
 
-    // =====================================
-    // 10. SUBMIT VIDEO TO SHOTSTACK
-    // =====================================
-
+    // Submit render
     const data = await shotstack("/render", {
       method: "POST",
       body: JSON.stringify(edit)
@@ -415,6 +334,7 @@ export default async function handler(req, res) {
 
     if (!renderId) {
       return res.status(502).json({
+        success: false,
         error: "Shotstack did not return a render ID",
         details: data
       });
@@ -436,7 +356,7 @@ export default async function handler(req, res) {
         cinematicVideo: true,
         voice: selectedVoice,
         backgroundMusic: Boolean(music),
-        captions: true
+        automaticCaptions: true
       },
       status: "queued"
     });
@@ -447,14 +367,7 @@ export default async function handler(req, res) {
     return res.status(error.status || 500).json({
       success: false,
       error: error.message || "Video rendering failed",
-      details: error.details || undefined
+      details: error.details || null
     });
   }
 }
-
-
-
-    
-
-     
-     
