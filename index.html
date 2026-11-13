@@ -5,74 +5,109 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#101827">
+<meta name="theme-color" content="#080d18">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>AI Shopping Shorts</title>
+
+<title>AI Shopping Shorts 2.0</title>
 
 <style>
 *{box-sizing:border-box}
 
 body{
   margin:0;
-  padding:16px;
-  background:#101827;
-  color:white;
+  padding:18px;
+  background:#080d18;
+  color:#fff;
   font-family:Arial,sans-serif;
 }
 
 main{
-  max-width:520px;
+  max-width:560px;
   margin:20px auto;
 }
 
-h1{
+.header{
   text-align:center;
-  color:#16c784;
+  padding:25px 10px;
 }
 
-h3{margin-top:5px}
+.logo{
+  font-size:34px;
+  margin-bottom:10px;
+}
+
+h1{
+  margin:8px 0;
+  font-size:29px;
+  background:linear-gradient(90deg,#16e0a0,#55a8ff);
+  background-clip:text;
+  -webkit-background-clip:text;
+  color:transparent;
+}
 
 .subtitle{
-  text-align:center;
-  color:#bdc8d8;
+  color:#aab8cb;
+  font-size:14px;
+}
+
+.badge{
+  display:inline-block;
+  padding:7px 12px;
+  border-radius:20px;
+  background:#14382f;
+  color:#36e6ac;
+  font-size:12px;
+  margin-top:10px;
 }
 
 .card{
-  background:#1d293b;
-  padding:18px;
-  margin:15px 0;
-  border-radius:12px;
+  background:linear-gradient(145deg,#18243a,#111a2b);
+  border:1px solid #293951;
+  padding:19px;
+  margin:16px 0;
+  border-radius:17px;
+}
+
+h3{
+  font-size:18px;
+  margin:3px 0 15px;
+}
+
+label{
+  display:block;
+  color:#aabbd1;
+  font-size:13px;
+  margin-top:13px;
 }
 
 input,select,textarea{
   width:100%;
-  padding:13px;
+  padding:14px;
   margin:8px 0;
-  border-radius:8px;
-  border:1px solid #46546b;
-  background:#101827;
+  border:1px solid #34445c;
+  border-radius:10px;
+  background:#0c1423;
   color:white;
-  font-size:16px;
+  font-size:15px;
 }
 
 textarea{
   resize:vertical;
-  line-height:1.5;
+  line-height:1.6;
 }
 
 button{
   width:100%;
   padding:15px;
-  margin:10px 0;
+  margin:9px 0;
   border:0;
-  border-radius:9px;
-  background:#16c784;
-  color:#071b14;
-  font-size:16px;
+  border-radius:11px;
+  background:linear-gradient(90deg,#16d99c,#36b9ef);
+  color:#071820;
+  font-size:15px;
   font-weight:bold;
   cursor:pointer;
-  touch-action:manipulation;
 }
 
 button:disabled{
@@ -81,212 +116,338 @@ button:disabled{
 }
 
 .secondary{
-  background:#40516b;
+  background:#293c58;
   color:white;
 }
 
-#startButton{
-  font-size:19px;
-  padding:20px;
-}
-
-#status{
-  text-align:center;
-  margin:20px 0;
-  padding:12px;
-  color:#16c784;
-  overflow-wrap:anywhere;
-  line-height:1.5;
-}
-
 .small{
-  color:#aab7ca;
-  font-size:13px;
+  color:#91a3bb;
+  font-size:12px;
   line-height:1.6;
 }
 
-video{
-  width:100%;
-  margin-top:15px;
-  border-radius:10px;
-  background:black;
-}
-
-a{
-  color:#16c784;
-  display:block;
-  margin:15px 0;
-  text-align:center;
-  overflow-wrap:anywhere;
-}
-
 .product-item{
-  background:#101827;
-  border:1px solid #46546b;
-  border-radius:10px;
-  padding:12px;
-  margin:12px 0;
+  background:#0c1423;
+  border:1px solid #34445c;
+  border-radius:12px;
+  padding:13px;
+  margin:13px 0;
 }
 
 .product-item img{
   width:100%;
   height:180px;
   object-fit:contain;
-  border-radius:8px;
   background:white;
+  border-radius:9px;
 }
 
 .product-item h4{
   line-height:1.4;
-  margin:10px 0;
 }
 
 .product-price{
-  color:#16c784;
-  font-size:18px;
+  color:#28e2a6;
+  font-size:19px;
   font-weight:bold;
 }
 
 .product-store{
-  color:#aab7ca;
+  color:#9aabc0;
   font-size:13px;
+  margin:8px 0;
 }
 
-.selected-label{
-  color:#16c784;
-  font-size:13px;
-  font-weight:bold;
+.option-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
 }
 
-#video{
+.option{
+  background:#0c1423;
+  border:1px solid #34445c;
+  padding:12px;
+  border-radius:11px;
+}
+
+.option label{
+  margin:0;
+}
+
+.option select{
+  margin-bottom:0;
+}
+
+.checkbox-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-top:15px;
+}
+
+.checkbox-row input{
+  width:20px;
+  height:20px;
+  margin:0;
+  accent-color:#16d99c;
+}
+
+.checkbox-row label{
+  margin:0;
+  color:white;
+}
+
+#status{
+  background:#111e30;
+  border:1px solid #34445c;
+  border-radius:12px;
+  padding:17px;
+  margin:18px 0;
+  text-align:center;
+  color:#2ce5aa;
+  line-height:1.6;
+  overflow-wrap:anywhere;
+}
+
+video{
+  width:100%;
+  margin-top:15px;
+  border-radius:12px;
+  background:black;
+}
+
+a{
+  display:block;
+  color:#39e5b0;
+  text-align:center;
+  margin:15px 0;
+  overflow-wrap:anywhere;
+}
+
+.hidden{
+  display:none;
+}
+
+#progressBar{
+  height:7px;
+  background:#27364c;
+  border-radius:10px;
   overflow:hidden;
+  margin-top:12px;
 }
 
+#progressFill{
+  width:0%;
+  height:100%;
+  background:linear-gradient(90deg,#16d99c,#36b9ef);
+  transition:width .4s;
+}
+
+.footer{
+  text-align:center;
+  color:#6e819b;
+  font-size:11px;
+  padding:20px;
+}
 </style>
 </head>
 
 <body>
+
 <main>
 
-<h1>AI Shopping Shorts</h1>
-<p class="subtitle">One-Click AI Video Creator</p>
+<header class="header">
+  <div class="logo">🎬</div>
 
-<!-- US TRENDING PRODUCTS -->
+  <h1>AI SHOPPING SHORTS 2.0</h1>
 
-<div class="card">
+  <p class="subtitle">
+    AI Human Models × Cinematic Product Commercials
+  </p>
+
+  <span class="badge">1080P CINEMATIC AI STUDIO</span>
+</header>
+
+<!-- PRODUCT SEARCH -->
+
+<section class="card">
 
 <h3>🇺🇸 US Trending Products</h3>
 
 <p class="small">
-Discover popular products from US shopping results.
-Select a product to automatically generate an English advertisement.
+Discover popular products and automatically
+create professional English advertisements.
 </p>
 
 <input
- id="searchQuery"
- value="popular trending products"
- placeholder="Search products"
+  id="searchQuery"
+  value="popular trending products"
+  placeholder="Search products"
 >
 
-<button
- type="button"
- id="searchButton"
- onclick="findProducts()"
->
-FIND TOP 5 US PRODUCTS
+<button id="searchButton" onclick="findProducts()">
+  FIND TOP 5 US PRODUCTS
 </button>
 
 <div id="products"></div>
 
-</div>
+</section>
 
 <!-- PRODUCT INFORMATION -->
 
-<div class="card" id="productSection">
+<section class="card">
 
-<h3>Product Information</h3>
+<h3>📦 Product Information</h3>
 
-<label for="product" class="small">Selected product</label>
-
-<input
- id="product"
- placeholder="Product name"
->
-
-<label for="imageUrl" class="small">Product image URL</label>
+<label for="product">Product Name</label>
 
 <input
- id="imageUrl"
- type="url"
- placeholder="Public HTTPS product image URL"
+  id="product"
+  placeholder="Enter product name"
 >
+
+<label for="imageUrl">Product Image URL (Optional)</label>
+
+<input
+  id="imageUrl"
+  type="url"
+  placeholder="Public HTTPS image URL"
+>
+
+<p class="small">
+If an image is supplied, AI will animate the product image.
+Without an image, AI will generate a commercial from the product description.
+</p>
+
+</section>
+
+<!-- AI MODEL SETTINGS -->
+
+<section class="card">
+
+<h3>👤 AI Human Model</h3>
+
+<label for="voice">AI Presenter / Voice</label>
+
+<select id="voice">
+  <option value="female">Female Model & Voice</option>
+  <option value="male">Male Model & Voice</option>
+</select>
+
+<p class="small">
+The selected gender guides the AI visual prompt and English voice.
+The generated model is AI-created.
+</p>
+
+</section>
+
+<!-- CINEMATIC SETTINGS -->
+
+<section class="card">
+
+<h3>🎥 Cinematic Production</h3>
+
+<div class="option-grid">
+
+  <div class="option">
+    <label for="videoStyle">Commercial Style</label>
+
+    <select id="videoStyle">
+      <option value="cinematic">Cinematic</option>
+      <option value="luxury">Luxury</option>
+      <option value="futuristic">Futuristic</option>
+    </select>
+  </div>
+
+  <div class="option">
+    <label for="quality">Video Quality</label>
+
+    <select id="quality">
+      <option value="1080p">1080p Full HD</option>
+    </select>
+  </div>
 
 </div>
 
-<!-- ADVERTISEMENT SETTINGS -->
+<div class="checkbox-row">
+  <input type="checkbox" id="music" checked>
+  <label for="music">Generate cinematic background music</label>
+</div>
 
-<div class="card" id="advertisementSection">
+</section>
 
-<h3>Advertisement Settings</h3>
+<!-- SCRIPT -->
 
-<label for="voice" class="small">AI voice preference</label>
+<section class="card">
 
-<select id="voice">
-<option value="female">Female Voice</option>
-<option value="male">Male Voice</option>
-</select>
-
-<button
- type="button"
- class="secondary"
- id="previewButton"
- onclick="previewVoice()"
->
-PREVIEW VOICE
-</button>
-
-<h3>English Advertisement Script</h3>
+<h3>✍️ English Advertisement Script</h3>
 
 <textarea
- id="script"
- rows="8"
- placeholder="Your English advertisement script will appear here."
+  id="script"
+  rows="7"
+  maxlength="2500"
+  placeholder="Your AI-generated English advertisement will appear here."
 ></textarea>
 
 <button
- type="button"
- id="scriptButton"
- onclick="generateScriptButton()"
+  class="secondary"
+  id="scriptButton"
+  onclick="generateScriptButton()"
 >
-GENERATE SCRIPT
+  GENERATE ENGLISH SCRIPT
 </button>
 
-</div>
+<button
+  class="secondary"
+  id="previewButton"
+  onclick="previewVoice()"
+>
+  🔊 PREVIEW VOICE
+</button>
 
-<!-- VIDEO PRODUCTION -->
+</section>
 
-<div class="card">
+<!-- VIDEO GENERATION -->
 
-<h3>Video Production</h3>
+<section class="card">
+
+<h3>🚀 AI Video Production</h3>
 
 <p class="small">
-Generate AI voice and create a vertical shopping advertisement video.
+Generate an AI human presenter, cinematic product visuals,
+English AI narration, subtitles and background music.
 </p>
 
 <button
- type="button"
- id="startButton"
- onclick="startAutomation()"
+  id="startButton"
+  onclick="startAutomation()"
 >
-START AUTOMATION
+  START AI AUTOMATION
 </button>
 
-<div id="video"></div>
+<div id="progressSection" class="hidden">
+
+  <div id="progressBar">
+    <div id="progressFill"></div>
+  </div>
+
+  <p class="small" id="progressText">
+    Preparing production...
+  </p>
 
 </div>
 
+<div id="video"></div>
+
+</section>
+
 <div id="status" role="status" aria-live="polite">
-Ready to start
+  Ready to start your AI commercial.
+</div>
+
+<div class="footer">
+  AI SHOPPING SHORTS 2.0 · CINEMATIC AI STUDIO
 </div>
 
 </main>
@@ -296,14 +457,32 @@ Ready to start
 const $ = id => document.getElementById(id);
 
 let busy = false;
-
-// STATUS
+let currentRenderId = null;
 
 function status(message){
   $("status").textContent = message;
 }
 
-// RESPONSE HANDLER
+function progress(percent,message){
+  $("progressSection").classList.remove("hidden");
+  $("progressFill").style.width =
+    Math.max(0,Math.min(100,percent)) + "%";
+
+  $("progressText").textContent = message;
+}
+
+function setBusy(value){
+  busy = value;
+
+  [
+    "searchButton",
+    "scriptButton",
+    "startButton",
+    "previewButton"
+  ].forEach(id => {
+    $(id).disabled = value;
+  });
+}
 
 async function readResponse(response){
 
@@ -312,9 +491,7 @@ async function readResponse(response){
   try{
     data = await response.json();
   }catch(error){
-    throw new Error(
-      "Server returned an invalid response. Check your API."
-    );
+    throw new Error("Invalid server response.");
   }
 
   if(!response.ok){
@@ -326,8 +503,6 @@ async function readResponse(response){
   return data;
 }
 
-// GET JSON
-
 async function getJSON(url){
 
   const response = await fetch(url,{
@@ -335,10 +510,8 @@ async function getJSON(url){
     cache:"no-store"
   });
 
-  return await readResponse(response);
+  return readResponse(response);
 }
-
-// POST JSON
 
 async function post(url,body){
 
@@ -350,10 +523,12 @@ async function post(url,body){
     body:JSON.stringify(body)
   });
 
-  return await readResponse(response);
+  return readResponse(response);
 }
 
-// FIND US TRENDING PRODUCTS
+// =====================================
+// PRODUCT SEARCH
+// =====================================
 
 async function findProducts(){
 
@@ -362,16 +537,14 @@ async function findProducts(){
   const query = $("searchQuery").value.trim();
 
   if(!query){
-    alert("Enter a product search keyword.");
+    alert("Enter a search keyword.");
     return;
   }
 
-  busy = true;
-
-  $("searchButton").disabled = true;
+  setBusy(true);
   $("products").replaceChildren();
 
-  status("Searching US shopping products...");
+  status("Searching US trending products...");
 
   try{
 
@@ -382,7 +555,7 @@ async function findProducts(){
     if(!Array.isArray(data.products) ||
        data.products.length === 0){
 
-      status("No products found. Try another search.");
+      status("No products found.");
       return;
     }
 
@@ -391,8 +564,6 @@ async function findProducts(){
       const card = document.createElement("div");
       card.className = "product-item";
 
-      // PRODUCT IMAGE
-
       const image = document.createElement("img");
 
       image.alt = item.name || "Product image";
@@ -400,26 +571,19 @@ async function findProducts(){
 
       if(item.imageUrl){
         image.src = item.imageUrl;
-      }else{
-        image.alt = "Image unavailable";
       }
-
-      // PRODUCT NAME
 
       const name = document.createElement("h4");
 
       name.textContent =
-        (item.rank || index + 1) + ". " +
+        (item.rank || index+1) + ". " +
         (item.name || "Unknown product");
-
-      // PRICE
 
       const price = document.createElement("div");
 
       price.className = "product-price";
-      price.textContent = item.price || "Price unavailable";
-
-      // STORE
+      price.textContent =
+        item.price || "Price unavailable";
 
       const store = document.createElement("div");
 
@@ -427,45 +591,25 @@ async function findProducts(){
       store.textContent =
         "Store: " + (item.store || "Unknown");
 
-      // SELECT BUTTON
+      const select = document.createElement("button");
 
-      const selectButton = document.createElement("button");
+      select.textContent = "SELECT THIS PRODUCT";
 
-      selectButton.type = "button";
-      selectButton.textContent = "SELECT THIS PRODUCT";
-
-      selectButton.onclick = async () => {
+      select.onclick = async ()=>{
 
         if(busy) return;
 
-        // Save selected product
-
         $("product").value = item.name || "";
-
         $("imageUrl").value = item.imageUrl || "";
-
         $("script").value = "";
 
         $("video").replaceChildren();
 
-        // Selected status
-
-        const selected = document.createElement("div");
-
-        selected.className = "selected-label";
-        selected.textContent = "✓ PRODUCT SELECTED";
-
-        card.append(selected);
-
-        // Automatically generate script
-
-        $("advertisementSection").scrollIntoView({
-          behavior:"smooth",
-          block:"start"
+        $("advertisementSection")?.scrollIntoView({
+          behavior:"smooth"
         });
 
         await generateScriptButton();
-
       };
 
       card.append(
@@ -473,10 +617,8 @@ async function findProducts(){
         name,
         price,
         store,
-        selectButton
+        select
       );
-
-      // PRODUCT LINK
 
       if(item.productUrl){
 
@@ -496,7 +638,7 @@ async function findProducts(){
 
     status(
       "Found " + Math.min(data.products.length,5) +
-      " products. Select one to generate an advertisement."
+      " products. Select a product."
     );
 
   }catch(error){
@@ -505,41 +647,30 @@ async function findProducts(){
 
   }finally{
 
-    busy = false;
-    $("searchButton").disabled = false;
-
+    setBusy(false);
   }
 }
 
-// GENERATE ENGLISH ADVERTISEMENT SCRIPT
+// =====================================
+// GENERATE SCRIPT
+// =====================================
 
 async function generateScript(product){
 
-  if(!product){
-    throw new Error("Product name is missing.");
-  }
-
-  status("Generating English advertisement...");
+  status("Generating English commercial script...");
 
   const data = await post("/api/generate",{
     product:product
   });
 
-  if(!data.script ||
-     typeof data.script !== "string" ||
-     !data.script.trim()){
-
-    throw new Error("No advertisement script returned.");
+  if(!data.script || typeof data.script !== "string"){
+    throw new Error("Advertisement script missing.");
   }
 
   $("script").value = data.script.trim();
 
-  status("SUCCESS! English advertisement generated.");
-
   return data.script.trim();
 }
-
-// GENERATE SCRIPT BUTTON
 
 async function generateScriptButton(){
 
@@ -548,15 +679,11 @@ async function generateScriptButton(){
   const product = $("product").value.trim();
 
   if(!product){
-    alert("Select a product or enter a product name.");
+    alert("Enter or select a product.");
     return;
   }
 
-  busy = true;
-
-  $("scriptButton").disabled = true;
-  $("startButton").disabled = true;
-  $("searchButton").disabled = true;
+  setBusy(true);
 
   try{
 
@@ -564,34 +691,33 @@ async function generateScriptButton(){
 
     await generateScript(product);
 
+    status("English advertisement script ready.");
+
   }catch(error){
 
     status("SCRIPT ERROR: " + error.message);
 
   }finally{
 
-    busy = false;
-
-    $("scriptButton").disabled = false;
-    $("startButton").disabled = false;
-    $("searchButton").disabled = false;
-
+    setBusy(false);
   }
 }
 
+// =====================================
 // PREVIEW VOICE
+// =====================================
 
 function previewVoice(){
 
   const script = $("script").value.trim();
 
   if(!script){
-    alert("Generate your script first.");
+    alert("Generate your English script first.");
     return;
   }
 
   if(!("speechSynthesis" in window)){
-    alert("Voice preview is not supported by this browser.");
+    alert("Voice preview is unavailable.");
     return;
   }
 
@@ -602,62 +728,70 @@ function previewVoice(){
   utterance.rate = 0.95;
 
   utterance.pitch =
-    $("voice").value === "female" ? 1.15 : 0.85;
+    $("voice").value === "female" ? 1.1 : 0.9;
 
   speechSynthesis.cancel();
   speechSynthesis.speak(utterance);
 }
 
-// GENERATE AI VOICE
+// =====================================
+// CREATE AI VIDEO
+// =====================================
 
-async function generateVoice(script){
+async function renderVideo(script){
 
-  status("2/4 Generating AI voice...");
+  status("Submitting AI cinematic video production...");
 
-  const data = await post("/api/voice",{
-    script:script,
-    voice:$("voice").value
-  });
+  progress(15,"Sending AI production request...");
 
-  if(!data.audioUrl){
-    throw new Error("No audio URL returned by voice API.");
-  }
+  const gender = $("voice").value;
 
-  return data.audioUrl;
-}
+  const selectedVoice =
+    gender === "female" ? "Charlotte" : "George";
 
-// CREATE VIDEO
-
-async function renderVideo(
-  script,
-  imageUrl,
-  audioUrl
-){
-
-  status("3/4 Sending video to Shotstack...");
+  const imageUrl = $("imageUrl").value.trim();
 
   const data = await post("/api/render",{
+
+    product:$("product").value.trim(),
+
     script:script,
-    imageUrl:imageUrl,
-    audioUrl:audioUrl
+
+    imageUrl:imageUrl || undefined,
+
+    voiceGender:gender,
+
+    voice:selectedVoice,
+
+    videoStyle:$("videoStyle").value,
+
+    music:$("music").checked
+
   });
 
-  const id = data.response?.id;
+  const id =
+    data.renderId || data.response?.id;
 
   if(!id){
     throw new Error(
-      data.error || "Shotstack render ID missing."
+      data.error || "Render ID was not returned."
     );
   }
+
+  currentRenderId = id;
 
   return id;
 }
 
+// =====================================
 // CHECK VIDEO STATUS
+// =====================================
 
 async function waitForVideo(id){
 
-  for(let i=0;i<60;i++){
+  const maxAttempts = 180;
+
+  for(let i=0;i<maxAttempts;i++){
 
     await new Promise(resolve =>
       setTimeout(resolve,5000)
@@ -667,112 +801,125 @@ async function waitForVideo(id){
       "/api/render?id=" + encodeURIComponent(id)
     );
 
-    const render = data.response;
+    const render = data.response || data;
 
-    if(!render){
-      throw new Error("Video status response is missing.");
-    }
+    const state = render.status || "processing";
 
-    status(
-      "4/4 Video status: " +
-      (render.status || "processing")
+    const percent = Math.min(
+      95,
+      20 + Math.floor((i/maxAttempts)*75)
     );
 
-    if(render.status === "done"){
+    progress(
+      percent,
+      "AI video production: " + state
+    );
+
+    status(
+      "Your cinematic commercial is being created. Status: " +
+      state
+    );
+
+    if(state === "done"){
 
       if(!render.url){
-        throw new Error("Video URL missing.");
+        throw new Error("Finished video URL is missing.");
       }
 
-      const player =
-        document.createElement("video");
+      const player = document.createElement("video");
 
       player.controls = true;
       player.playsInline = true;
       player.preload = "metadata";
       player.src = render.url;
 
-      const link =
-        document.createElement("a");
+      const link = document.createElement("a");
 
       link.href = render.url;
       link.target = "_blank";
       link.rel = "noopener noreferrer";
-      link.download = "shopping-shorts.mp4";
-      link.textContent = "SAVE MP4 VIDEO";
+      link.download = "AI-Shopping-Shorts-2.mp4";
+      link.textContent = "⬇ SAVE MP4 VIDEO";
 
       $("video").replaceChildren(player,link);
 
-      status("SUCCESS! Your video is ready.");
+      progress(100,"Video production complete!");
 
-      return;
+      status("SUCCESS! Your AI commercial is ready.");
+
+      return render.url;
     }
 
-    if(render.status === "failed"){
+    if(state === "failed"){
 
       throw new Error(
-        render.error || "Video rendering failed."
+        render.error ||
+        render.message ||
+        "Shotstack rendering failed."
       );
     }
   }
 
   throw new Error(
-    "Rendering timed out. Check Shotstack status."
+    "Rendering timed out. Your render ID is " + id
   );
 }
 
+// =====================================
 // START AUTOMATION
+// =====================================
 
 async function startAutomation(){
 
   if(busy) return;
 
   const product = $("product").value.trim();
-  const imageUrl = $("imageUrl").value.trim();
 
   if(!product){
-    alert("Select a product first.");
+    alert("Select or enter a product first.");
     return;
   }
 
-  if(!/^https:\/\/.+/i.test(imageUrl)){
-    alert(
-      "Product image URL is missing. Select a product with an image or enter a public HTTPS image URL."
-    );
+  const imageUrl = $("imageUrl").value.trim();
+
+  if(
+    imageUrl &&
+    !/^https:\/\//i.test(imageUrl)
+  ){
+    alert("Image URL must use HTTPS.");
     return;
   }
 
-  busy = true;
+  setBusy(true);
 
-  $("startButton").disabled = true;
-  $("scriptButton").disabled = true;
-  $("searchButton").disabled = true;
+  currentRenderId = null;
 
   $("video").replaceChildren();
+
+  $("progressSection").classList.remove("hidden");
+
+  progress(5,"Preparing AI commercial...");
 
   try{
 
     let script = $("script").value.trim();
 
-    // Generate script automatically if empty
+    // STEP 1: SCRIPT
 
     if(!script){
+
+      progress(10,"Generating advertisement script...");
+
       script = await generateScript(product);
     }
 
-    // Generate AI voice
+    // STEP 2: AI MODEL + VIDEO + VOICE
 
-    const audioUrl = await generateVoice(script);
+    progress(15,"Creating AI model and cinematic scenes...");
 
-    // Render vertical video
+    const id = await renderVideo(script);
 
-    const id = await renderVideo(
-      script,
-      imageUrl,
-      audioUrl
-    );
-
-    // Wait for finished video
+    // STEP 3: MONITOR RENDER
 
     await waitForVideo(id);
 
@@ -780,14 +927,16 @@ async function startAutomation(){
 
     status("VIDEO ERROR: " + error.message);
 
+    progress(
+      0,
+      currentRenderId
+        ? "Render ID: " + currentRenderId
+        : "Production stopped."
+    );
+
   }finally{
 
-    busy = false;
-
-    $("startButton").disabled = false;
-    $("scriptButton").disabled = false;
-    $("searchButton").disabled = false;
-
+    setBusy(false);
   }
 }
 
