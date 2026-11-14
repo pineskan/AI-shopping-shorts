@@ -441,17 +441,16 @@ export default async function handler(req, res) {
       statusEndpoint: `?id=${encodeURIComponent(renderId)}`
     });
 
+ 
   } catch (error) {
     console.error(
-      "AI Shopping Shorts Error:",
-      error.message,
-      error.details
+      "SHOTSTACK VALIDATION DETAILS:",
+      JSON.stringify(error.details, null, 2)
     );
 
     return res.status(error.status || 500).json({
       success: false,
-      error: error.message || "Video rendering failed",
+      error: error.message,
       details: error.details || null
     });
   }
-}
