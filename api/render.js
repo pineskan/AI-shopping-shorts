@@ -448,9 +448,10 @@ export default async function handler(req, res) {
       JSON.stringify(error.details, null, 2)
     );
 
-    return res.status(error.status || 500).json({
+     return res.status(error.status || 500).json({
       success: false,
       error: error.message,
       details: error.details || null
     });
   }
+}
