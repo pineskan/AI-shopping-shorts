@@ -32,8 +32,7 @@ export default async function handler(req, res) {
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        ...(options.headers || {})
+        "x-api-key": apiKey
       }
     });
 
@@ -56,7 +55,9 @@ export default async function handler(req, res) {
   }
 
   try {
+
     // 1. CHECK RENDER STATUS
+
     if (req.method === "GET") {
       const id = req.query?.id;
 
@@ -72,28 +73,26 @@ export default async function handler(req, res) {
       );
 
       const render = data?.response || {};
-      const isDone = render.status === "done";
-      const isFailed = render.status === "failed";
 
       return res.status(200).json({
-        success: !isFailed,
+        success: render.status !== "failed",
         renderId: render.id || id,
         status: render.status || "unknown",
-        downloadReady: Boolean(isDone && render.url),
-        videoUrl: isDone ? render.url || null : null,
-        downloadUrl: isDone ? render.url || null : null,
-        error: isFailed
-          ? render.error || "Video rendering failed"
-          : null,
-        message: isDone
-          ? "Video rendering completed"
-          : isFailed
-            ? "Video rendering failed"
-            : "Video is still rendering"
+        downloadReady:
+          render.status === "done" && Boolean(render.url),
+        videoUrl:
+          render.status === "done" ? render.url : null,
+        downloadUrl:
+          render.status === "done" ? render.url : null,
+        error:
+          render.status === "failed"
+            ? render.error || "Video rendering failed"
+            : null
       });
     }
 
     // 2. RECEIVE REQUEST
+
     const body =
       typeof req.body === "string"
         ? JSON.parse(req.body)
@@ -130,18 +129,24 @@ export default async function handler(req, res) {
     if (scriptText.length > 2500) {
       return res.status(400).json({
         success: false,
-        error: "Script is too long. Maximum 2500 characters."
+        error: "Script is too long"
       });
     }
 
-    if (imageUrl && !/^https:\/\//i.test(imageUrl)) {
+    if (
+      imageUrl &&
+      !/^https:\/\//i.test(imageUrl)
+    ) {
       return res.status(400).json({
         success: false,
         error: "Image URL must use HTTPS"
       });
     }
 
-    if (audioUrl && !/^https:\/\//i.test(audioUrl)) {
+    if (
+      audioUrl &&
+      !/^https:\/\//i.test(audioUrl)
+    ) {
       return res.status(400).json({
         success: false,
         error: "Audio URL must use HTTPS"
@@ -149,6 +154,7 @@ export default async function handler(req, res) {
     }
 
     // 3. VOICE SETTINGS
+
     const gender =
       voiceGender === "male" ? "male" : "female";
 
@@ -157,25 +163,27 @@ export default async function handler(req, res) {
       (gender === "female" ? "Charlotte" : "Brian");
 
     const useMusic = music !== false;
+
     const duration = 12;
 
     // 4. VIDEO STYLES
+
     const styles = {
       cinematic: `
-        Premium Hollywood-style product commercial.
-        Photorealistic human model.
+        Premium Hollywood product commercial.
+        Photorealistic professional human model.
         Dramatic cinematic lighting.
         Smooth professional camera movement.
-        Realistic skin and natural expressions.
-        Beautiful commercial cinematography.
+        Natural human expressions.
+        Luxury commercial cinematography.
       `,
 
       luxury: `
         Luxury fashion advertising.
         Elegant professional human model.
-        High-end studio lighting.
-        Premium editorial cinematography.
-        Sophisticated movements.
+        Premium studio lighting.
+        High-end editorial cinematography.
+        Sophisticated natural movements.
       `,
 
       futuristic: `
@@ -196,8 +204,9 @@ export default async function handler(req, res) {
         : "A photorealistic professional male commercial model";
 
     // 5. AI VIDEO PROMPT
+
     const videoPrompt = `
-      Create a premium vertical product advertisement.
+      Create a premium vertical 9:16 product advertisement.
 
       PRODUCT:
       ${productName}
@@ -212,7 +221,7 @@ export default async function handler(req, res) {
       Show the model naturally presenting and interacting
       with the product.
 
-      Begin with an impressive cinematic opening.
+      Start with an impressive cinematic opening.
       Show the model in a professional environment.
       Move the camera toward a detailed product close-up.
       Finish with a memorable advertising shot.
@@ -232,14 +241,14 @@ export default async function handler(req, res) {
       IMPORTANT:
       Keep the product recognizable.
       Avoid distorted hands and faces.
-      Do not generate subtitles, logos,
-      watermarks or random text.
+      No subtitles, logos or watermarks.
 
       AD CONTEXT:
       ${scriptText.slice(0, 700)}
     `;
 
     // 6. AI VIDEO ASSET
+
     const videoAsset = {
       type: "video",
       prompt: videoPrompt,
@@ -251,7 +260,6 @@ export default async function handler(req, res) {
       options: {
         resolution: "1080p",
         aspectRatio: "9:16",
-        duration: String(duration),
         generateAudio: false,
 
         ...(imageUrl
@@ -261,10 +269,13 @@ export default async function handler(req, res) {
     };
 
     // 7. AI VOICE ASSET
+    // Volume belongs inside the audio asset.
+
     const voiceAsset = audioUrl
       ? {
           type: "audio",
-          src: audioUrl
+          src: audioUrl,
+          volume: 1
         }
       : {
           type: "audio",
@@ -273,10 +284,12 @@ export default async function handler(req, res) {
           options: {
             voice: selectedVoice,
             language: "en"
-          }
+          },
+          volume: 1
         };
 
-    // 8. BACKGROUND MUSIC
+    // 8. BACKGROUND MUSIC ASSET
+
     const musicAsset = {
       type: "audio",
       prompt: `
@@ -289,13 +302,58 @@ export default async function handler(req, res) {
       model: "elevenlabs-music",
       options: {
         forceInstrumental: true
-      }
+      },
+      volume: 0.16,
+      effect: "fadeInFadeOut"
     };
 
     // 9. BUILD TIMELINE
+    // Video first, captions last.
+
     const tracks = [];
 
-    // AUTOMATIC CAPTIONS
+    // VIDEO TRACK
+
+    tracks.push({
+      clips: [
+        {
+          asset: videoAsset,
+          start: 0,
+          length: duration,
+          fit: "crop"
+        }
+      ]
+    });
+
+    // BACKGROUND MUSIC TRACK
+
+    if (useMusic) {
+      tracks.push({
+        clips: [
+          {
+            asset: musicAsset,
+            start: 0,
+            length: duration
+          }
+        ]
+      });
+    }
+
+    // AI VOICE TRACK
+
+    tracks.push({
+      clips: [
+        {
+          alias: "voiceover",
+          asset: voiceAsset,
+          start: 0,
+          length: "auto"
+        }
+      ]
+    });
+
+    // AUTOMATIC CAPTIONS TRACK
+
     tracks.push({
       clips: [
         {
@@ -330,8 +388,7 @@ export default async function handler(req, res) {
             },
 
             animation: {
-              style: "highlight",
-              direction: "up"
+              style: "highlight"
             }
           },
 
@@ -342,47 +399,8 @@ export default async function handler(req, res) {
       ]
     });
 
-    // AI VOICE TRACK
-    tracks.push({
-      clips: [
-        {
-          alias: "voiceover",
-          asset: voiceAsset,
-          start: 0,
-          length: "auto",
-          volume: 1
-        }
-      ]
-    });
-
-    // BACKGROUND MUSIC TRACK
-    if (useMusic) {
-      tracks.push({
-        clips: [
-          {
-            asset: musicAsset,
-            start: 0,
-            length: "end",
-            volume: 0.16
-          }
-        ]
-      });
-    }
-
-    // AI VIDEO TRACK
-    tracks.push({
-      clips: [
-        {
-          asset: videoAsset,
-          start: 0,
-          length: duration,
-          fit: "crop",
-          volume: 0
-        }
-      ]
-    });
-
     // 10. FULL HD OUTPUT
+
     const edit = {
       timeline: {
         background: "#000000",
@@ -399,6 +417,7 @@ export default async function handler(req, res) {
     };
 
     // 11. SUBMIT TO SHOTSTACK
+
     const data = await shotstack("/render", {
       method: "POST",
       body: JSON.stringify(edit)
@@ -417,7 +436,9 @@ export default async function handler(req, res) {
     return res.status(200).json({
       success: true,
       message: "AI Shopping Shorts rendering started",
+
       renderId,
+
       product: productName,
 
       video: {
@@ -438,17 +459,19 @@ export default async function handler(req, res) {
       },
 
       status: "queued",
-      statusEndpoint: `?id=${encodeURIComponent(renderId)}`
+
+      statusEndpoint:
+        `?id=${encodeURIComponent(renderId)}`
     });
 
- 
   } catch (error) {
+
     console.error(
-      "SHOTSTACK VALIDATION DETAILS:",
+      "SHOTSTACK ERROR:",
       JSON.stringify(error.details, null, 2)
     );
 
-     return res.status(error.status || 500).json({
+    return res.status(error.status || 500).json({
       success: false,
       error: error.message,
       details: error.details || null
