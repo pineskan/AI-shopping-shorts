@@ -1,35 +1,57 @@
 
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({
-      error: "Method not allowed"
-    });
-  }
-
-  const apiKey = process.env.OPENAI_API_KEY;
-
-  if (!apiKey) {
-    return res.status(500).json({
-      error: "OPENAI_API_KEY is missing."
+      success: false,
+      error: "POST method required."
     });
   }
 
   try {
-    const { product, duration = 15 } = req.body || {};
+    const apiKey = process.env.OPENAI_API_KEY;
 
-    if (!product || typeof product !== "string" || !product.trim()) {
-      return res.status(400).json({
-        error: "Please enter a product name."
-      });
+    if (!apiKey) {
+      throw new Error(
+        "OPENAI_API_KEY is missing in Vercel."
+      );
     }
 
-    const safeDuration = Math.min(
-      60,
-      Math.max(8, Number(duration) || 15)
-    );
+    const body = req.body || {};
+    const product = body.product || {};
 
-    const aiResponse = await fetch(
-      "https://api.openai.com/v1/responses",
+    if (!product.name) {
+      throw new Error("Product name is required.");
+    }
+
+    const productName = String(product.name);
+    const price = String(product.price || "");
+    const store = String(product.store || "");
+    const style = String(body.style || "cinematic");
+
+    const prompt = `
+You are an expert American advertising creative director.
+
+Create a compelling 20-second English video advertisement.
+
+PRODUCT: ${productName}
+PRICE: ${price}
+STORE: ${store}
+STYLE: ${style}
+
+Requirements:
+1. Use natural, fluent American English.
+2. Start with a powerful attention-grabbing hook.
+3. Explain the product's appeal.
+4. Make the narration sound human and persuasive.
+5. End with a clear shopping call to action.
+6. Keep it approximately 45-55 spoken words.
+7. Do not invent product features or unverified claims.
+8. Return only the advertisement narration.
+`;
+
+    const response = await fetch(
+      "https://api.openai.com/v1/chat/completions",
       {
         method: "POST",
         headers: {
@@ -37,52 +59,36 @@ export default async function handler(req, res) {
           "Authorization": `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-          model: "gpt-4.1-mini",
-          instructions:
-            "You are a professional American shopping advertisement writer. Write natural, persuasive spoken English for short-form video ads. Never invent product specifications, prices, ratings, or benefits.",
-          input:
-            `Write an English shopping advertisement for this product: ${product.trim()}.
-
-Target length: approximately ${safeDuration} seconds.
-
-Requirements:
-1. Start with an attention-grabbing opening.
-2. Explain up to three realistic benefits.
-3. Use friendly, natural American English.
-4. Finish with a clear call to action.
-5. Do not include headings, scene labels, or explanations.
-6. Do not invent product specifications or unsupported claims.
-
-Return only the advertisement script.`
+          model: process.env.OPENAI_MODEL || "gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content: "You write professional American English shopping advertisements."
+            },
+            {
+              role: "user",
+              content: prompt
+            }
+          ],
+          temperature: 0.8,
+          max_tokens: 350
         })
       }
     );
 
-    const aiData = await aiResponse.json();
+    const data = await response.json();
 
-    if (!aiResponse.ok) {
-      console.error("OpenAI error:", aiData);
-
-      return res.status(aiResponse.status).json({
-        error:
-          aiData.error?.message ||
-          "OpenAI advertisement generation failed."
-      });
+    if (!response.ok) {
+      throw new Error(
+        data.error?.message || "OpenAI API request failed."
+      );
     }
 
-    const script = (aiData.output || [])
-      .flatMap(item => item.content || [])
-      .filter(item => item.type === "output_text")
-      .map(item => item.text)
-      .join("\n")
-      .trim();
+    const script =
+      data.choices?.[0]?.message?.content?.trim();
 
     if (!script) {
-      console.error("Empty OpenAI response:", aiData);
-
-      return res.status(500).json({
-        error: "AI returned an empty advertisement script."
-      });
+      throw new Error("OpenAI returned an empty script.");
     }
 
     return res.status(200).json({
@@ -94,7 +100,8 @@ Return only the advertisement script.`
     console.error("Script generation error:", error);
 
     return res.status(500).json({
-      error: error.message || "Server error."
+      success: false,
+      error: error.message || "Script generation failed."
     });
   }
 }
