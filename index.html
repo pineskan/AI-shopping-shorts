@@ -786,15 +786,16 @@ async function renderVideo(script){
 // =====================================
 // CHECK VIDEO STATUS
 // =====================================
+   
 
 async function waitForVideo(id){
 
   const maxAttempts = 180;
 
-  for(let i=0;i<maxAttempts;i++){
+  for(let i = 0; i < maxAttempts; i++){
 
     await new Promise(resolve =>
-      setTimeout(resolve,5000)
+      setTimeout(resolve, 5000)
     );
 
     const data = await getJSON(
@@ -807,7 +808,7 @@ async function waitForVideo(id){
 
     const percent = Math.min(
       95,
-      20 + Math.floor((i/maxAttempts)*75)
+      20 + Math.floor((i / maxAttempts) * 75)
     );
 
     progress(
@@ -822,8 +823,18 @@ async function waitForVideo(id){
 
     if(state === "done"){
 
-      if(!render.url){
-        throw new Error("Finished video URL is missing.");
+      // IMPORTANT: api/render.js returns videoUrl
+      const videoUrl =
+        render.videoUrl ||
+        render.url ||
+        render.response?.url ||
+        render.response?.videoUrl;
+
+      if(!videoUrl){
+        throw new Error(
+          "Render is done, but Shotstack returned no video URL. " +
+          "Check the render status in Shotstack."
+        );
       }
 
       const player = document.createElement("video");
@@ -831,23 +842,23 @@ async function waitForVideo(id){
       player.controls = true;
       player.playsInline = true;
       player.preload = "metadata";
-      player.src = render.url;
+      player.src = videoUrl;
 
       const link = document.createElement("a");
 
-      link.href = render.url;
+      link.href = videoUrl;
       link.target = "_blank";
       link.rel = "noopener noreferrer";
       link.download = "AI-Shopping-Shorts-2.mp4";
       link.textContent = "⬇ SAVE MP4 VIDEO";
 
-      $("video").replaceChildren(player,link);
+      $("video").replaceChildren(player, link);
 
-      progress(100,"Video production complete!");
+      progress(100, "Video production complete!");
 
       status("SUCCESS! Your AI commercial is ready.");
 
-      return render.url;
+      return videoUrl;
     }
 
     if(state === "failed"){
