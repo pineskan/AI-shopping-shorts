@@ -1,399 +1,637 @@
-export default async function handler(req, res) {
-  const apiKey = process.env.SHOTSTACK_API_KEY;
-  const env = process.env.SHOTSTACK_ENV || "stage";
 
-  if (!["stage", "v1"].includes(env)) {
-    return res.status(500).json({ success: false, error: "Invalid SHOTSTACK_ENV. Use stage or v1." });
+// api/render.js
+// AI Shopping Shorts 2.0
+// Low-cost mode: Seedance 2.0 / 480p / 5 scenes / 20 seconds
+
+const API_KEY = process.env.SHOTSTACK_API_KEY;
+const ENV = process.env.SHOTSTACK_ENV || "stage";
+const BASE_URL = `https://api.shotstack.io/edit/${ENV}`;
+
+const VIDEO_MODEL = "seedance-2.0-text-to-video";
+const IMAGE_VIDEO_MODEL = "seedance-2.0-image-to-video";
+const SPEECH_MODEL = "elevenlabs-multilingual-v2";
+const MUSIC_MODEL = "elevenlabs-music";
+
+const VIDEO_RESOLUTION = "480p";
+const ASPECT_RATIO = "9:16";
+const SCENE_LENGTH = 4;
+const SCENE_COUNT = 5;
+const TOTAL_LENGTH = SCENE_LENGTH * SCENE_COUNT;
+const MAX_CREDITS_DEFAULT = 30;
+
+// Approximate editing charge from the previous account quote.
+// AI video, speech and music are quoted separately through Shotstack.
+const EDITING_ESTIMATE = TOTAL_LENGTH / 60;
+
+const VOICES = [
+  "Charlotte", "George", "Rachel", "Aria",
+  "Roger", "Brian", "Sarah", "Liam"
+];
+
+function json(res, status, data) {
+  return res.status(status).json(data);
+}
+
+function safeNumber(value, fallback) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : fallback;
+}
+
+function cleanText(value, max = 2000) {
+  return String(value || "").trim().slice(0, max);
+}
+
+function validHttpsUrl(value) {
+  if (!value) return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:";
+  } catch {
+    return false;
   }
-  if (!apiKey) {
-    return res.status(500).json({ success: false, error: "SHOTSTACK_API_KEY is missing" });
-  }
+}
 
-  const base = `https://api.shotstack.io/edit/${env}`;
+function getProduct(body) {
+  const product = body.product || {};
 
-  async function api(path, options = {}) {
-    const response = await fetch(`${base}${path}`, {
-      ...options,
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        ...(options.headers || {})
+  return {
+    name: cleanText(product.name, 180),
+    price: cleanText(product.price, 60),
+    store: cleanText(product.store, 100),
+    imageUrl: cleanText(product.imageUrl, 1500),
+    productUrl: cleanText(product.productUrl, 1500)
+  };
+}
+
+function buildScenePrompts(product, style) {
+  const name = product.name || "the featured product";
+  const store = product.store || "premium retail";
+  const productDescription =
+    `${name}, a real consumer product, recognizable packaging and accurate product appearance`;
+
+  const styleDescriptions = {
+    cinematic:
+      "luxury cinematic commercial, premium film lighting, rich contrast, elegant camera movement",
+    energetic:
+      "energetic social media commercial, dynamic camera movement, bright modern lighting",
+    minimal:
+      "minimal premium product advertisement, clean studio lighting, refined composition",
+    lifestyle:
+      "authentic lifestyle influencer commercial, natural daylight, warm relatable atmosphere"
+  };
+
+  const look = styleDescriptions[style] || styleDescriptions.cinematic;
+
+  const modelDescription =
+    "One adult female commercial model, approximately 25 to 35 years old, " +
+    "natural realistic human appearance, expressive eyes, believable skin texture, " +
+    "professional but approachable, modern American lifestyle advertising. " +
+    "Keep the same general model identity and styling throughout this commercial.";
+
+  return [
+    `${look}. Opening hero shot. ${modelDescription} ` +
+    `She introduces ${productDescription} in a beautiful modern studio. ` +
+    `The product is clearly visible in her hands. Slow cinematic camera push-in. ` +
+    `Photorealistic live-action commercial, natural human movement.`,
+
+    `${look}. Product beauty shot. ` +
+    `${productDescription} displayed prominently on a premium surface. ` +
+    `The adult model's hands gently pick up and present the product. ` +
+    `Slow elegant camera orbit, realistic reflections, detailed packaging, ` +
+    `shallow depth of field, professional commercial photography.`,
+
+    `${look}. Lifestyle demonstration. ${modelDescription} ` +
+    `She naturally uses or demonstrates ${productDescription} in a beautiful real-life setting. ` +
+    `Believable hand movement, authentic expression, smooth camera tracking, ` +
+    `premium American product advertisement.`,
+
+    `${look}. Close-up detail shot of ${productDescription}. ` +
+    `The model smiles naturally in the softly blurred background. ` +
+    `Focus on the product's design and visual details, cinematic macro camera movement, ` +
+    `realistic skin and materials, polished commercial lighting.`,
+
+    `${look}. Final campaign hero shot. ${modelDescription} ` +
+    `She confidently presents ${productDescription} toward the camera. ` +
+    `The product is centered and clearly visible. Elegant slow camera pull-back, ` +
+    `beautiful premium advertising finish, clean composition with room for a call to action.`
+  ];
+}
+
+function buildVideoAsset(prompt, imageUrl, index) {
+  // The first scene can animate the real product image.
+  // The remaining four scenes use text-to-video prompts.
+  if (index === 0 && validHttpsUrl(imageUrl)) {
+    return {
+      type: "video",
+      model: IMAGE_VIDEO_MODEL,
+      prompt:
+        "Animate this product image into a cinematic commercial shot. " +
+        "Keep the product packaging and design recognizable. " +
+        "A realistic adult model's hands gently present the product. " +
+        "Slow camera push-in, premium lighting, natural motion.",
+      options: {
+        startSrc: imageUrl,
+        aspectRatio: ASPECT_RATIO,
+        resolution: VIDEO_RESOLUTION,
+        generateAudio: false
       }
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      const error = new Error(
-        data?.response?.message || data?.message || data?.error || `Shotstack API error ${response.status}`
-      );
-      error.status = response.status;
-      error.details = data;
-      throw error;
-    }
-    return data;
-  }
-
-  const json = (status, data) => res.status(status).json(data);
-
-  function responseBody(data) {
-    return data?.response || data || {};
-  }
-
-  function getCredits(data) {
-    const value = data?.response?.credits ?? data?.credits ?? data?.response?.cost ?? data?.cost;
-    return Number(value);
-  }
-
-  async function quoteAsset(asset, length) {
-    const payload = { asset };
-    if (typeof length === "number") payload.length = length;
-    const data = await api("/generate/quote", { method: "POST", body: JSON.stringify(payload) });
-    const credits = getCredits(data);
-    if (!Number.isFinite(credits)) {
-      throw new Error("Could not read a generation quote from Shotstack. Check the model and account access.");
-    }
-    return credits;
-  }
-
-  function categoryFor(product) {
-    const p = product.toLowerCase();
-    if (/serum|skincare|skin care|makeup|cosmetic|lipstick|blush|mascara|beauty|shampoo|perfume/.test(p)) return "beauty";
-    if (/phone|laptop|computer|headphone|earbud|speaker|camera|tablet|charger|keyboard|monitor|tech/.test(p)) return "technology";
-    if (/kitchen|cookware|air fryer|blender|coffee maker|pan|knife|mug|vacuum|cleaner|home/.test(p)) return "home";
-    if (/dress|shirt|shoe|sneaker|handbag|bag|jacket|jeans|fashion|watch|jewelry/.test(p)) return "fashion";
-    if (/fitness|yoga|workout|massage|wellness|water bottle|supplement|fitness tracker/.test(p)) return "wellness";
-    return "lifestyle";
-  }
-
-  function modelDirection(category) {
-    const directions = {
-      beauty: "A polished adult beauty and skincare commercial model, natural healthy-looking skin, refined neutral wardrobe, confident gentle expressions, demonstrating a beauty routine without making medical claims.",
-      technology: "A stylish adult technology presenter in a clean modern studio, smart casual wardrobe, confident precise gestures, naturally interacting with the device.",
-      home: "A relatable adult lifestyle creator in a beautiful contemporary home or kitchen, practical neutral clothing, naturally demonstrating the household product.",
-      fashion: "An adult fashion campaign model with editorial styling, confident natural movement, tasteful wardrobe suited to the product category.",
-      wellness: "An active adult lifestyle model in a bright calm wellness setting, comfortable athletic-casual wardrobe, demonstrating a realistic everyday use.",
-      lifestyle: "A relatable adult American lifestyle commercial model, contemporary wardrobe, natural expressions and believable everyday product use."
     };
-    return directions[category] || directions.lifestyle;
   }
 
-  function styleDirection(style) {
-    if (style === "luxury") return "Luxury editorial campaign, restrained premium palette, sculpted studio lighting, elegant slow camera movement, refined composition.";
-    if (style === "futuristic") return "Modern futuristic commercial, architectural light forms, crisp reflections, precise camera movement, premium technology-inspired atmosphere.";
-    return "Cinematic premium commercial, dramatic but natural lighting, rich contrast, shallow depth of field, controlled dolly and macro camera movement.";
+  return {
+    type: "video",
+    model: VIDEO_MODEL,
+    prompt,
+    options: {
+      aspectRatio: ASPECT_RATIO,
+      resolution: VIDEO_RESOLUTION,
+      generateAudio: false
+    }
+  };
+}
+
+async function shotstackRequest(path, method = "GET", body) {
+  if (!API_KEY) {
+    throw new Error("SHOTSTACK_API_KEY is missing in Vercel Environment Variables.");
   }
 
-  function safeText(value, max = 180) {
-    return String(value || "").trim().slice(0, max);
-  }
+  const response = await fetch(`${BASE_URL}${path}`, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": API_KEY
+    },
+    ...(body ? { body: JSON.stringify(body) } : {})
+  });
 
-  function makeScenePrompts({ product, category, model, style, imageUrl, price, store }) {
-    const persona = model;
-    const look = styleDirection(style);
-    const productLine = `Feature this exact product: ${product}.`;
-    const noText = "No visible text, no subtitles, no logos, no watermark, no extra fingers, no distorted product.";
-
-    const scenes = [
-      {
-        name: "Cinematic product opening",
-        prompt: `${productLine} ${look} Create a 4-second premium vertical product hero commercial. Place the product in a beautifully lit studio with dramatic highlights, subtle atmospheric depth and a slow cinematic camera push-in. Keep the product recognizable, centered and visually accurate. ${noText}`
-      },
-      {
-        name: "Product features and macro",
-        prompt: `${productLine} ${look} Create a 4-second macro commercial shot showing premium details, surface texture, materials and elegant reflections. Use dynamic close-up camera movement and crisp focus. Preserve the product's real-world shape and appearance. ${noText}`
-      },
-      {
-        name: "AI model experience",
-        prompt: `${productLine} ${persona} ${look} Create a 4-second realistic lifestyle demonstration. Show the model naturally picking up, holding or using the product in a plausible everyday setting. Keep the product visible and correctly shaped. ${noText}`
-      },
-      {
-        name: "Voice and captions visual",
-        prompt: `${productLine} ${persona} ${look} Create a 4-second supporting commercial shot: the same described type of adult model demonstrates the product with a natural confident expression, then a close-up of the product in use. Leave uncluttered visual space in the lower third for separately added captions. ${noText}`
-      },
-      {
-        name: "Price and call to action",
-        prompt: `${productLine} ${look} Create a 4-second final hero shot of the product on a premium pedestal or clean lifestyle surface, slow elegant camera pull-back, bright polished highlights, generous uncluttered negative space in the center-lower area for a price and SHOP NOW overlay. ${noText}`
-      }
-    ];
-
-    return scenes.map((scene, index) => {
-      const useImage = Boolean(imageUrl) && index === 0;
-      const asset = {
-        type: "video",
-        prompt: scene.prompt,
-        model: useImage ? "seedance-2.0-image-to-video" : "seedance-2.0-text-to-video",
-        options: {
-          resolution: "1080p",
-          aspectRatio: "9:16",
-          generateAudio: false
-        }
-      };
-      if (useImage) asset.options.startSrc = imageUrl;
-      return { ...scene, asset, start: index * 4, length: 4 };
-    });
-  }
+  const text = await response.text();
+  let data;
 
   try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    throw new Error(
+      `Shotstack returned an invalid response (${response.status}): ${text.slice(0, 500)}`
+    );
+  }
+
+  if (!response.ok) {
+    const message =
+      data.error ||
+      data.message ||
+      data.response?.error ||
+      `Shotstack request failed (${response.status})`;
+
+    throw new Error(message);
+  }
+
+  return data;
+}
+
+async function quoteAsset(asset, length) {
+  const body = { asset };
+
+  if (length !== undefined && length !== null) {
+    body.length = length;
+  }
+
+  const data = await shotstackRequest(
+    "/generate/quote",
+    "POST",
+    body
+  );
+
+  const credits = safeNumber(
+    data.credits ?? data.response?.credits,
+    NaN
+  );
+
+  if (!Number.isFinite(credits)) {
+    throw new Error("Shotstack quote response did not include a valid credit amount.");
+  }
+
+  return credits;
+}
+
+async function calculateQuote(body) {
+  const product = getProduct(body);
+  const script = cleanText(body.script, 5000);
+  const voice = VOICES.includes(body.voice) ? body.voice : "Charlotte";
+  const style = cleanText(body.style, 40) || "cinematic";
+
+  if (!product.name) {
+    throw new Error("Product name is required.");
+  }
+
+  if (!script) {
+    throw new Error("English advertisement script is required.");
+  }
+
+  if (product.imageUrl && !validHttpsUrl(product.imageUrl)) {
+    throw new Error("Product image URL must be a public HTTPS URL.");
+  }
+
+  const prompts = buildScenePrompts(product, style);
+
+  let videoCredits = 0;
+
+  // Quote each scene separately so the total is based on five actual requests.
+  for (let i = 0; i < SCENE_COUNT; i++) {
+    const asset = buildVideoAsset(
+      prompts[i],
+      product.imageUrl,
+      i
+    );
+
+    videoCredits += await quoteAsset(asset, SCENE_LENGTH);
+  }
+
+  const speechAsset = {
+    type: "audio",
+    prompt: script,
+    model: SPEECH_MODEL,
+    options: {
+      voice,
+      language: "en",
+      stability: 0.48,
+      similarityBoost: 0.78,
+      style: 0.25
+    }
+  };
+
+  const voiceCredits = await quoteAsset(speechAsset);
+
+  const musicAsset = {
+    type: "audio",
+    prompt:
+      "Premium upbeat instrumental commercial background music, " +
+      "modern elegant electronic pop, warm uplifting energy, " +
+      "subtle cinematic build, no vocals, no lyrics.",
+    model: MUSIC_MODEL,
+    options: {
+      forceInstrumental: true
+    }
+  };
+
+  const musicCredits = await quoteAsset(musicAsset, TOTAL_LENGTH);
+
+  const breakdown = {
+    video: videoCredits,
+    voice: voiceCredits,
+    music: musicCredits,
+    editing: EDITING_ESTIMATE
+  };
+
+  const total =
+    breakdown.video +
+    breakdown.voice +
+    breakdown.music +
+    breakdown.editing;
+
+  const maxCredits = Math.min(
+    30,
+    Math.max(1, safeNumber(body.maxCredits, MAX_CREDITS_DEFAULT))
+  );
+
+  return {
+    product,
+    script,
+    voice,
+    style,
+    prompts,
+    breakdown,
+    estimatedTotalCredits: Number(total.toFixed(3)),
+    maxCredits,
+    withinLimit: total <= maxCredits,
+    resolution: VIDEO_RESOLUTION,
+    outputSize: "480x854",
+    aspectRatio: ASPECT_RATIO,
+    durationSeconds: TOTAL_LENGTH,
+    sceneCount: SCENE_COUNT
+  };
+}
+
+function buildEdit(quote) {
+  const product = quote.product;
+  const script = quote.script;
+  const prompts = quote.prompts;
+
+  const videoClips = [];
+
+  for (let i = 0; i < SCENE_COUNT; i++) {
+    videoClips.push({
+      asset: buildVideoAsset(
+        prompts[i],
+        product.imageUrl,
+        i
+      ),
+      start: i * SCENE_LENGTH,
+      length: SCENE_LENGTH,
+      effect: i === 0 ? "zoomIn" : "none",
+      transition: {
+        in: "fade",
+        out: "fade"
+      }
+    });
+  }
+
+  const speechClip = {
+    alias: "narrator",
+    asset: {
+      type: "audio",
+      prompt: script,
+      model: SPEECH_MODEL,
+      options: {
+        voice: quote.voice,
+        language: "en",
+        stability: 0.48,
+        similarityBoost: 0.78,
+        style: 0.25
+      }
+    },
+    start: 0,
+    length: "auto"
+  };
+
+  const captionClip = {
+    asset: {
+      type: "rich-caption",
+      src: "alias://narrator",
+      font: {
+        family: "Arial",
+        size: 30,
+        weight: "700",
+        color: "#ffffff"
+      },
+      stroke: {
+        width: 2,
+        color: "#000000",
+        opacity: 0.9
+      },
+      shadow: {
+        offsetX: 1,
+        offsetY: 2,
+        blur: 4,
+        color: "#000000",
+        opacity: 0.8
+      },
+      background: {
+        color: "#101010",
+        opacity: 0.35
+      },
+      position: "bottom"
+    },
+    start: 0,
+    length: "end"
+  };
+
+  const titleClip = {
+    asset: {
+      type: "rich-text",
+      text: product.name,
+      font: {
+        family: "Arial",
+        size: 28,
+        weight: "700",
+        color: "#ffffff"
+      },
+      background: {
+        color: "#111827",
+        opacity: 0.72
+      },
+      alignment: {
+        horizontal: "center",
+        vertical: "center"
+      },
+      width: 430,
+      height: 90
+    },
+    start: 0,
+    length: 3,
+    position: "top"
+  };
+
+  const priceText = product.price
+    ? `SHOP NOW · ${product.price}`
+    : "SHOP NOW";
+
+  const ctaClip = {
+    asset: {
+      type: "rich-text",
+      text: priceText,
+      font: {
+        family: "Arial",
+        size: 30,
+        weight: "700",
+        color: "#ffffff"
+      },
+      background: {
+        color: "#6658dc",
+        opacity: 0.95
+      },
+      alignment: {
+        horizontal: "center",
+        vertical: "center"
+      },
+      width: 420,
+      height: 90
+    },
+    start: 16,
+    length: 4,
+    position: "bottom"
+  };
+
+  const musicClip = {
+    asset: {
+      type: "audio",
+      prompt:
+        "Premium upbeat instrumental commercial background music, " +
+        "modern elegant electronic pop, warm uplifting energy, " +
+        "subtle cinematic build, no vocals, no lyrics.",
+      model: MUSIC_MODEL,
+      options: {
+        forceInstrumental: true
+      }
+    },
+    start: 0,
+    length: TOTAL_LENGTH,
+    volume: 0.16
+  };
+
+  return {
+    timeline: {
+      background: "#080d18",
+      tracks: [
+        { clips: [captionClip] },
+        { clips: [titleClip, ctaClip] },
+        { clips: [speechClip] },
+        { clips: [musicClip] },
+        { clips: videoClips }
+      ]
+    },
+    output: {
+      format: "mp4",
+      size: {
+        width: 480,
+        height: 854
+      },
+      fps: 24,
+      quality: "high"
+    }
+  };
+}
+
+function extractRenderId(data) {
+  return (
+    data.response?.id ||
+    data.id ||
+    data.renderId ||
+    null
+  );
+}
+
+export default async function handler(req, res) {
+  try {
+    if (!["stage", "v1"].includes(ENV)) {
+      return json(res, 500, {
+        success: false,
+        error: "SHOTSTACK_ENV must be either stage or v1."
+      });
+    }
+
+    if (!API_KEY) {
+      return json(res, 500, {
+        success: false,
+        error: "SHOTSTACK_API_KEY is missing."
+      });
+    }
+
+    // GET: Check render status or list available models.
     if (req.method === "GET") {
       if (req.query?.models === "1") {
-        const data = await api("/models?expand=options");
-        return json(200, { success: true, models: responseBody(data) });
+        const data = await shotstackRequest(
+          "/models?expand=options"
+        );
+
+        return json(res, 200, data);
       }
-      const id = req.query?.id;
-      if (!id) return json(400, { success: false, error: "Render ID is required" });
-      const data = await api(`/render/${encodeURIComponent(id)}`);
-      const render = responseBody(data);
-      return json(200, {
-        success: render.status !== "failed",
-        renderId: render.id || id,
-        status: render.status || "unknown",
-        videoUrl: render.status === "done" ? (render.url || null) : null,
-        downloadReady: render.status === "done" && Boolean(render.url),
-        error: render.status === "failed" ? (render.error || "Rendering failed") : null
-      });
-    }
 
-    if (req.method !== "POST") return json(405, { success: false, error: "Method not allowed" });
+      const renderId = cleanText(req.query?.id, 150);
 
-    const body = typeof req.body === "string" ? JSON.parse(req.body) : (req.body || {});
-    const {
-      mode = "quote",
-      product,
-      price = "",
-      store = "",
-      script,
-      imageUrl,
-      voiceGender = "auto",
-      videoStyle = "cinematic",
-      music = true,
-      maxCredits = 30,
-      confirmCost = false
-    } = body;
-
-    if (!["quote", "final"].includes(mode)) {
-      return json(400, { success: false, error: "Mode must be quote or final" });
-    }
-
-    const productName = safeText(product, 180);
-    const scriptText = safeText(script, 2500);
-    const productPrice = safeText(price, 40);
-    const storeName = safeText(store, 100);
-
-    if (!productName || !scriptText) {
-      return json(400, { success: false, error: "Product and English script are required" });
-    }
-    if (imageUrl && !/^https:\/\//i.test(imageUrl)) {
-      return json(400, { success: false, error: "Product image URL must use HTTPS" });
-    }
-
-    const category = categoryFor(productName);
-    const scenes = makeScenePrompts({
-      product: productName,
-      category,
-      model: modelDirection(category),
-      style: videoStyle,
-      imageUrl,
-      price: productPrice,
-      store: storeName
-    });
-        const voiceName = voiceGender === "male" ? "George" : "Charlotte";
-    const voiceAsset = {
-      type: "audio",
-      prompt: scriptText,
-      model: "elevenlabs-multilingual-v2",
-      options: {
-        voice: voiceName,
-        language: "en"
+      if (!renderId) {
+        return json(res, 400, {
+          success: false,
+          error: "Render ID is required."
+        });
       }
-    };
 
-    const musicAsset = {
-      type: "audio",
-      prompt: "A polished upbeat cinematic product-advertising instrumental, modern uplifting pulse, elegant premium sound, no vocals.",
-      model: "elevenlabs-music",
-      options: { forceInstrumental: true }
-    };
+      const data = await shotstackRequest(
+        `/render/${encodeURIComponent(renderId)}?data=false`
+      );
 
-    // Check the current account's model access before quoting or submitting.
-    const modelData = await api("/models?expand=options");
-    const modelResponse = responseBody(modelData);
-    const availableModels = Array.isArray(modelResponse) ? modelResponse : (modelResponse.models || []);
-    const hasModel = id => availableModels.some(item => item.model === id && item.available !== false);
-    const missing = [...new Set(scenes.map(s => s.asset.model))].filter(id => !hasModel(id));
-    if (missing.length) {
-      return json(403, {
+      return json(res, 200, data);
+    }
+
+    if (req.method !== "POST") {
+      res.setHeader("Allow", "GET, POST");
+      return json(res, 405, {
         success: false,
-        error: "Your current Shotstack account does not show access to the required AI video model(s): " + missing.join(", "),
-        details: "Open Shotstack model access or contact Shotstack support. No render was submitted."
+        error: "Method not allowed."
       });
     }
 
-    const videoQuotes = [];
-    for (const scene of scenes) {
-      videoQuotes.push(await quoteAsset(scene.asset, scene.length));
-    }
-    const voiceCredits = await quoteAsset(voiceAsset);
-    const musicCredits = music ? await quoteAsset(musicAsset, 20) : 0;
-    const renderCredits = 20 / 60;
-    const totalCredits = videoQuotes.reduce((sum, value) => sum + value, 0) + voiceCredits + musicCredits + renderCredits;
-    const creditLimit = Math.max(0, Number(maxCredits) || 0);
+    const body = req.body || {};
+    const mode = cleanText(body.mode, 20);
 
-    const breakdown = {
-      video: Number(videoQuotes.reduce((sum, value) => sum + value, 0).toFixed(4)),
-      voice: Number(voiceCredits.toFixed(4)),
-      music: Number(musicCredits.toFixed(4)),
-      render: Number(renderCredits.toFixed(4))
-    };
-
+    // POST mode=quote: calculate costs only. No video is submitted.
     if (mode === "quote") {
-      return json(200, {
+      const quote = await calculateQuote(body);
+
+      return json(res, 200, {
         success: true,
         mode: "quote",
-        message: "Estimate only. No final render submitted.",
-        breakdown,
-        estimatedTotalCredits: Number(totalCredits.toFixed(4)),
-        maxCredits: creditLimit,
-        withinCreditLimit: totalCredits <= creditLimit,
-        scenes: scenes.map(s => ({ name: s.name, seconds: s.length, model: s.asset.model })),
-        resolution: "1080x1920",
-        durationSeconds: 20,
-        category
+        breakdown: quote.breakdown,
+        estimatedTotalCredits: quote.estimatedTotalCredits,
+        maxCredits: quote.maxCredits,
+        withinLimit: quote.withinLimit,
+        resolution: quote.resolution,
+        outputSize: quote.outputSize,
+        aspectRatio: quote.aspectRatio,
+        durationSeconds: quote.durationSeconds,
+        sceneCount: quote.sceneCount,
+        message: quote.withinLimit
+          ? "Estimate is within the credit limit. No video has been submitted."
+          : "Estimate exceeds the credit limit. No video has been submitted."
       });
     }
 
-    if (!confirmCost) {
-      return json(400, {
-        success: false,
-        error: "Final generation requires explicit cost confirmation",
-        estimatedTotalCredits: Number(totalCredits.toFixed(4))
-      });
-    }
-    if (totalCredits > creditLimit) {
-      return json(402, {
-        success: false,
-        error: "Estimated cost exceeds your approved credit limit. No final video was submitted.",
-        estimatedTotalCredits: Number(totalCredits.toFixed(4)),
-        maxCredits: creditLimit
-      });
-    }
-
-    const videoClips = scenes.map(scene => ({
-      asset: scene.asset,
-      start: scene.start,
-      length: scene.length,
-      fit: "crop"
-    }));
-
-    const captionClip = {
-      asset: {
-        type: "rich-caption",
-        src: "alias://voiceover",
-        font: {
-          family: "Roboto",
-          size: 46,
-          color: "#ffffff",
-          weight: "700"
-        },
-        align: { vertical: "bottom", horizontal: "center" },
-        stroke: { width: 3, color: "#000000", opacity: 1 },
-        shadow: { offsetX: 0, offsetY: 2, blur: 5, color: "#000000", opacity: 0.8 },
-      },
-      start: 0,
-      length: 20
-    };
-
-    const endCardText = [
-      productPrice ? productPrice + "  ·  SHOP NOW" : "SHOP NOW",
-      storeName ? "AVAILABLE AT " + storeName.toUpperCase() : "TAP THE LINK TO SHOP"
-    ].join("\n");
-
-    const endCardClip = {
-      asset: {
-        type: "rich-text",
-        text: endCardText,
-        font: {
-          family: "Roboto",
-          size: 64,
-          weight: "700",
-          color: "#ffffff",
-          background: "#111827"
-        },
-        align: { horizontal: "center", vertical: "middle" },
-        background: { color: "#111827", opacity: 0.78, borderRadius: 18, wrap: false, padding: 18 },
-        stroke: { width: 2, color: "#000000", opacity: 0.6 },
-      },
-      start: 16,
-      length: 4,
-      position: "center"
-    };
-
-    const tracks = [
-      { clips: [captionClip] },
-      { clips: [endCardClip] },
-      { clips: videoClips },
-      {
-        clips: [{
-          alias: "voiceover",
-          asset: voiceAsset,
-          start: 0,
-          length: 20,
-          volume: 1
-        }]
+    // POST mode=final: recalculate the estimate on the server,
+    // then submit only when the user explicitly approves.
+    if (mode === "final") {
+      if (body.confirmCost !== true) {
+        return json(res, 400, {
+          success: false,
+          error: "Explicit cost approval is required."
+        });
       }
-    ];
 
-    if (music) {
-      tracks.push({
-        clips: [{
-          asset: musicAsset,
-          start: 0,
-          length: 20,
-          volume: 0.14
-        }]
+      const quote = await calculateQuote(body);
+
+      if (!quote.withinLimit) {
+        return json(res, 402, {
+          success: false,
+          error:
+            `Estimate exceeds your credit limit. ` +
+            `Estimated total: ${quote.estimatedTotalCredits}. ` +
+            `Maximum allowed: ${quote.maxCredits}. ` +
+            `No video was submitted.`,
+          estimatedTotalCredits: quote.estimatedTotalCredits,
+          breakdown: quote.breakdown
+        });
+      }
+
+      const edit = buildEdit(quote);
+
+      const data = await shotstackRequest(
+        "/render",
+        "POST",
+        edit
+      );
+
+      const renderId = extractRenderId(data);
+
+      if (!renderId) {
+        return json(res, 502, {
+          success: false,
+          error: "Shotstack did not return a render ID.",
+          details: data
+        });
+      }
+
+      return json(res, 200, {
+        success: true,
+        mode: "final",
+        renderId,
+        status: data.response?.status || "queued",
+        estimatedTotalCredits: quote.estimatedTotalCredits,
+        resolution: quote.resolution,
+        outputSize: quote.outputSize,
+        durationSeconds: quote.durationSeconds,
+        message: "Your AI commercial has been submitted."
       });
     }
 
-    const edit = {
-      timeline: {
-        background: "#05070c",
-        tracks
-      },
-      output: {
-        format: "mp4",
-        size: { width: 1080, height: 1920 },
-        fps: 30
-      }
-    };
-
-    const renderData = await api("/render", {
-      method: "POST",
-      body: JSON.stringify(edit)
-    });
-    const renderResponse = responseBody(renderData);
-    const renderId = renderResponse.id;
-    if (!renderId) throw new Error("Shotstack did not return a render ID.");
-
-    return json(200, {
-      success: true,
-      mode: "final",
-      message: "Five-scene 1080p cinematic rendering started",
-      renderId,
-      product: productName,
-      category,
-      resolution: "1080x1920",
-      durationSeconds: 20,
-      sceneCount: 5,
-      scenes: scenes.map(s => ({ name: s.name, seconds: s.length, model: s.asset.model })),
-      estimatedCredits: Number(totalCredits.toFixed(4)),
-      status: renderResponse.status || "queued",
-      statusEndpoint: `?id=${encodeURIComponent(renderId)}`
-    });
-  } catch (error) {
-    console.error("AI SHOPPING SHORTS RENDER ERROR:", JSON.stringify(error.details || error.message, null, 2));
-    return json(error.status || 500, {
+    return json(res, 400, {
       success: false,
-      error: error.message || "Video generation failed",
-      details: error.details || null
+      error: "Invalid mode. Use quote or final."
+    });
+
+  } catch (error) {
+    console.error("AI Shopping Shorts render error:", error);
+
+    return json(res, 500, {
+      success: false,
+      error: error.message || "Unexpected render error."
     });
   }
 }
