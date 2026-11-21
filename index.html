@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,173 +8,80 @@
 <meta name="theme-color" content="#080d18">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>AI Shopping Shorts 2.0</title>
+
+<title>AI Shopping Shorts 3.0</title>
 
 <style>
-:root {
-  color-scheme: dark;
-  --bg:#080d18;
-  --panel:#111a2b;
-  --line:#26344b;
-  --text:#f5f7fb;
-  --muted:#9eabc0;
-  --accent:#8b7cff;
-  --green:#35d39a;
-  --red:#ff6c7a;
-}
 *{box-sizing:border-box}
 body{
-  margin:0;
-  background:linear-gradient(145deg,#080d18,#101a2d);
-  color:var(--text);
-  font-family:Inter,Arial,sans-serif;
-  min-height:100vh;
-  padding:24px 14px 50px;
+  margin:0;padding:16px;background:#080d18;color:#fff;
+  font-family:Arial,sans-serif
 }
-main{max-width:920px;margin:auto}
-header{text-align:center;margin:10px 0 28px}
-.logo{
-  font-size:12px;
-  letter-spacing:3px;
-  color:#a99cff;
-  font-weight:800
+main{max-width:650px;margin:20px auto}
+header{text-align:center;padding:24px 8px}
+.logo{font-size:38px}
+h1{
+  font-size:29px;
+  background:linear-gradient(90deg,#16e0a0,#55a8ff);
+  -webkit-background-clip:text;background-clip:text;color:transparent
 }
-h1{font-size:clamp(27px,5vw,42px);margin:10px 0}
-.subtitle{color:var(--muted);font-size:14px;line-height:1.6}
-.panel{
-  background:rgba(17,26,43,.96);
-  border:1px solid var(--line);
-  border-radius:18px;
-  padding:20px;
-  margin:16px 0;
-  box-shadow:0 12px 35px #0003;
-}
-h2{font-size:18px;margin:0 0 15px}
-h3{font-size:15px;margin:0 0 8px}
-label{
-  display:block;
-  color:#c6d0df;
-  font-size:13px;
-  margin:12px 0 7px
-}
-input,textarea,select{
-  width:100%;
-  background:#091222;
-  color:white;
-  border:1px solid #34445e;
-  border-radius:10px;
-  padding:12px;
-  font-size:15px;
-  outline:none;
-}
-textarea{min-height:145px;resize:vertical;line-height:1.5}
-input:focus,textarea:focus,select:focus{border-color:var(--accent)}
-button{
-  border:0;
-  border-radius:11px;
-  padding:13px 17px;
-  font-size:14px;
-  font-weight:800;
-  cursor:pointer;
-  color:white;
-  background:#6658dc;
-}
-button:disabled{opacity:.45;cursor:not-allowed}
-button.secondary{background:#263650}
-button.green{background:#168b68}
-button.red{background:#a83d50}
-button.full{width:100%;margin-top:12px}
-.row{display:flex;gap:10px;flex-wrap:wrap}
-.row>*{flex:1;min-width:150px}
-.small{font-size:12px;color:var(--muted);line-height:1.55}
-.status{
-  padding:12px;
-  border-radius:10px;
-  background:#0a1425;
-  border:1px solid var(--line);
-  margin-top:12px;
-  white-space:pre-wrap;
-  overflow-wrap:anywhere;
-  line-height:1.5;
-  font-size:13px;
-}
-.status.good{border-color:#1d8e6a;color:#9af0cf}
-.status.bad{border-color:#a83d50;color:#ffabb4}
-.status.loading{border-color:#7669dc;color:#c8c0ff}
-.product-list{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
-  gap:12px
-}
-.product{
-  background:#0a1425;
-  border:1px solid var(--line);
-  border-radius:13px;
-  padding:12px;
-  cursor:pointer;
-  min-width:0;
-}
-.product.selected{border:2px solid var(--accent);padding:11px}
-.product img{
-  width:100%;
-  height:150px;
-  object-fit:contain;
-  background:#fff;
-  border-radius:8px
-}
-.product .name{font-weight:800;margin:10px 0 5px;font-size:14px}
-.product .meta{font-size:12px;color:var(--muted)}
-.product .price{color:#8df0c7;font-weight:800;margin-top:7px}
+.subtitle,.small{color:#aab8cb;line-height:1.6}
+.subtitle{font-size:14px}
+.small{font-size:12px}
 .badge{
-  display:inline-block;
-  border:1px solid #485878;
-  border-radius:30px;
-  color:#c8d2e4;
-  padding:5px 9px;
-  font-size:11px;
-  margin:4px 4px 0 0
+  display:inline-block;padding:7px 12px;border-radius:20px;
+  background:#14382f;color:#36e6ac;font-size:12px
 }
-.step{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  margin:10px 0;
-  color:#dbe3f1;
-  font-size:13px
+.card{
+  background:linear-gradient(145deg,#18243a,#111a2b);
+  border:1px solid #293951;padding:18px;margin:15px 0;border-radius:16px
 }
-.step b{
-  width:25px;
-  height:25px;
-  display:grid;
-  place-items:center;
-  border-radius:50%;
-  background:#302b61;
-  color:#c9c1ff;
-  flex:none
+h3{font-size:18px;margin:3px 0 14px}
+label{display:block;color:#aabbd1;font-size:13px;margin-top:12px}
+input,select,textarea{
+  width:100%;padding:13px;margin:7px 0;
+  border:1px solid #34445c;border-radius:10px;
+  background:#0c1423;color:white;font-size:15px
 }
-.hidden{display:none!important}
-#videoPreview{
-  width:100%;
-  max-height:620px;
-  background:#000;
-  border-radius:12px
+textarea{resize:vertical;line-height:1.6}
+button{
+  width:100%;padding:14px;margin:8px 0;border:0;
+  border-radius:10px;background:linear-gradient(90deg,#16d99c,#36b9ef);
+  color:#071820;font-size:14px;font-weight:bold;cursor:pointer
 }
-.quote-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.quote-item{
-  background:#0a1425;
-  border:1px solid var(--line);
-  padding:12px;
-  border-radius:10px
+button:disabled{opacity:.5;cursor:wait}
+.secondary{background:#293c58;color:white}
+.product-item,.scene{
+  background:#0c1423;border:1px solid #34445c;
+  border-radius:12px;padding:13px;margin:12px 0
 }
-.quote-item strong{display:block;font-size:19px;margin-top:5px}
-.quote-total{font-size:30px;font-weight:900;color:#a99cff}
-hr{border:0;border-top:1px solid var(--line);margin:17px 0}
-footer{text-align:center;color:#65738a;font-size:11px;padding:18px}
-@media(max-width:560px){
-  body{padding:14px 10px 35px}
-  .panel{padding:15px}
-  .row>*{min-width:100%}
-  .quote-grid{grid-template-columns:1fr 1fr}
+.product-item img{
+  width:100%;height:180px;object-fit:contain;
+  background:white;border-radius:9px
+}
+.product-item h4{line-height:1.4}
+.product-price{color:#28e2a6;font-size:18px;font-weight:bold}
+.product-store{color:#9aabc0;font-size:13px}
+.scene-number{color:#35e5ad;font-size:12px;font-weight:bold}
+.scene h4{margin:8px 0}
+.scene p{font-size:13px;line-height:1.55;color:#c6d2e1}
+.scene strong{color:#fff}
+#status{
+  background:#111e30;border:1px solid #34445c;border-radius:12px;
+  padding:15px;margin:18px 0;text-align:center;
+  color:#2ce5aa;line-height:1.6;overflow-wrap:anywhere
+}
+.footer{text-align:center;color:#6e819b;font-size:11px;padding:20px}
+.hidden{display:none}
+a{color:#39e5b0;overflow-wrap:anywhere}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.scene-caption{
+  display:inline-block;background:#24364c;color:#fff;
+  padding:7px 10px;border-radius:7px;font-weight:bold
+}
+@media(max-width:430px){
+  body{padding:10px}
+  .row{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -182,968 +90,517 @@ footer{text-align:center;color:#65738a;font-size:11px;padding:18px}
 <main>
 
 <header>
-  <div class="logo">AI CREATIVE COMMERCE STUDIO</div>
-  <h1>AI Shopping Shorts 2.0</h1>
-  <div class="subtitle">
-    Create cinematic product commercials for YouTube Shorts and TikTok.
-  </div>
-  <span class="badge">9:16 VERTICAL</span>
-  <span class="badge">20 SECONDS</span>
-  <span class="badge">5 AI SCENES</span>
-  <span class="badge">480p LOW-COST MODE</span>
+  <div class="logo">🎬</div>
+  <h1>AI SHOPPING SHORTS 3.0</h1>
+  <p class="subtitle">AI Creative Director · Cinematic Storyboard · CapCut Studio</p>
+  <span class="badge">VERTICAL 9:16 · 1080P TARGET</span>
 </header>
 
-<!-- 01 PRODUCT SEARCH -->
-<section class="panel">
-  <h2>01 · Find popular US products</h2>
-  <div class="small">
-    Search popular products and select one for your commercial.
-  </div>
+<section class="card">
+  <h3>🇺🇸 US Trending Products</h3>
+  <p class="small">
+    Search popular products and choose one for your commercial.
+  </p>
 
-  <label for="searchQuery">Product category or keyword</label>
-  <input
-    id="searchQuery"
-    placeholder="beauty, home, kitchen, electronics..."
-    value="trending products"
-  >
+  <input id="searchQuery" value="popular trending products"
+    placeholder="Search products">
 
-  <button
-    id="findButton"
-    class="full"
-    onclick="findProducts()"
-  >
+  <button id="searchButton" onclick="findProducts()">
     FIND TOP 5 US PRODUCTS
   </button>
 
-  <div id="productStatus" class="status">
-    Ready to search.
-  </div>
-
-  <div
-    id="productList"
-    class="product-list"
-    style="margin-top:14px"
-  ></div>
+  <div id="products"></div>
 </section>
 
-<!-- 02 PRODUCT INFORMATION -->
-<section class="panel">
-  <h2>02 · Product information</h2>
-  <div class="small">
-    Select a product above or enter its details manually.
-  </div>
+<section class="card">
+  <h3>📦 Product Information</h3>
 
-  <label for="productName">Product name</label>
-  <input id="productName" placeholder="Product name">
+  <label for="product">Product Name</label>
+  <input id="product" placeholder="Enter product name">
 
   <div class="row">
     <div>
-      <label for="productPrice">Price (USD)</label>
-      <input id="productPrice" placeholder="$29.99">
+      <label for="price">Price</label>
+      <input id="price" placeholder="$25">
     </div>
-
     <div>
-      <label for="productStore">Store</label>
-      <input id="productStore" placeholder="Amazon, Sephora, Target...">
+      <label for="store">Store</label>
+      <input id="store" placeholder="Amazon, Sephora, etc.">
     </div>
   </div>
 
-  <label for="productImage">Public product image URL (HTTPS)</label>
-  <input id="productImage" placeholder="https://...">
+  <label for="imageUrl">Product Image URL (Optional)</label>
+  <input id="imageUrl" type="url" placeholder="https://...">
 
-  <label for="productUrl">Product page URL (optional)</label>
-  <input id="productUrl" placeholder="https://...">
+  <label for="productUrl">Product Page URL (Optional)</label>
+  <input id="productUrl" type="url" placeholder="https://...">
 </section>
 
-<!-- 03 SCRIPT GENERATION -->
-<section class="panel">
-  <h2>03 · AI commercial script</h2>
-
-  <div class="small">
-    Create a natural American-English advertisement script.
-  </div>
+<section class="card">
+  <h3>🎥 Creative Direction</h3>
 
   <div class="row">
     <div>
-      <label for="voice">American English voice</label>
+      <label for="videoStyle">Commercial Style</label>
+      <select id="videoStyle">
+        <option value="cinematic">Cinematic</option>
+        <option value="luxury">Luxury</option>
+        <option value="futuristic">Futuristic</option>
+        <option value="lifestyle">Lifestyle</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="voice">AI Presenter</label>
       <select id="voice">
-        <option value="Charlotte">Charlotte · Female</option>
-        <option value="George">George · Male</option>
-        <option value="Rachel">Rachel · Female</option>
-        <option value="Aria">Aria · Female</option>
-        <option value="Roger">Roger · Male</option>
-        <option value="Brian">Brian · Male</option>
-      </select>
-    </div>
-
-    <div>
-      <label for="style">Commercial style</label>
-      <select id="style">
-        <option value="cinematic">Cinematic luxury commercial</option>
-        <option value="energetic">Energetic social media ad</option>
-        <option value="minimal">Clean premium product showcase</option>
-        <option value="lifestyle">Lifestyle influencer commercial</option>
+        <option value="female">Female presenter</option>
+        <option value="male">Male presenter</option>
       </select>
     </div>
   </div>
 
-  <button
-    id="scriptButton"
-    class="full"
-    onclick="generateScript()"
-  >
+  <p class="small">
+    These settings guide the script and visual storyboard.
+    The final video is assembled in CapCut.
+  </p>
+</section>
+
+<section class="card" id="advertisementSection">
+  <h3>✍️ English Advertisement Script</h3>
+
+  <textarea id="script" rows="7" maxlength="4000"
+    placeholder="Your English advertisement script will appear here."></textarea>
+
+  <button id="scriptButton" onclick="generateScriptButton()">
     GENERATE ENGLISH AD SCRIPT
   </button>
 
-  <!-- IMPORTANT: status is now directly under the script button -->
-  <div id="scriptStatus" class="status">
-    Ready. Select a product, then generate your English script.
-  </div>
-
-  <label for="script">English narration script</label>
-  <textarea
-    id="script"
-    placeholder="Your English commercial script will appear here..."
-  ></textarea>
-
-  <div class="small">
-    Review and edit the script before creating your video.
-  </div>
+  <button class="secondary" id="previewButton" onclick="previewVoice()">
+    🔊 PREVIEW ENGLISH VOICE
+  </button>
 </section>
 
-<!-- 04 VIDEO PRODUCTION -->
-<section class="panel">
-  <h2>04 · Video production</h2>
+<section class="card">
+  <h3>🎞️ 5-Scene Cinematic Storyboard</h3>
 
-  <div class="step"><b>1</b> AI model and cinematic product scenes</div>
-  <div class="step"><b>2</b> Five scenes × approximately four seconds</div>
-  <div class="step"><b>3</b> English narration and background music</div>
-  <div class="step"><b>4</b> Vertical 9:16 MP4 output</div>
+  <p class="small">
+    AI-generated scene directions, camera movement, captions and narration.
+    Review these scenes before assembling your video.
+  </p>
 
-  <hr>
-
-  <div class="row">
-    <div>
-      <label>AI video generation</label>
-      <input value="Seedance 2.0 · 480p" readonly>
-    </div>
-
-    <div>
-      <label>Output size</label>
-      <input value="480 × 854 · 24 fps" readonly>
-    </div>
+  <div id="storyboard">
+    <p class="small">Generate your advertisement script to create the storyboard.</p>
   </div>
 
-  <label for="maxCredits">Maximum allowed credits</label>
-  <input
-    id="maxCredits"
-    type="number"
-    min="1"
-    max="30"
-    value="30"
-  >
-
-  <div class="small">
-    The app requests a fresh Shotstack estimate first.
-    If the estimate exceeds this limit, final rendering will not start.
-  </div>
-
-  <button
-    id="quoteButton"
-    class="full"
-    onclick="getQuote()"
-  >
-    CHECK VIDEO COST
+  <button class="secondary" id="copyButton" onclick="copyStoryboard()">
+    COPY STORYBOARD
   </button>
 
-  <div id="renderStatus" class="status">
-    Waiting for script and product information.
-  </div>
+  <button class="secondary" id="downloadButton" onclick="downloadStoryboard()">
+    DOWNLOAD STORYBOARD FILE
+  </button>
 </section>
 
-<!-- 05 COST APPROVAL -->
-<section id="quotePanel" class="panel hidden">
-  <h2>05 · Cost estimate and approval</h2>
+<section class="card">
+  <h3>🚀 CapCut Production</h3>
 
-  <div class="quote-grid">
-    <div class="quote-item">
-      <span class="small">AI video generation</span>
-      <strong id="videoCredits">—</strong>
-    </div>
+  <p class="small">
+    Your AI script and storyboard are prepared here. Import your product
+    images or video clips into CapCut, follow the five scenes, add narration
+    and captions, then export your final vertical video.
+  </p>
 
-    <div class="quote-item">
-      <span class="small">English voice</span>
-      <strong id="voiceCredits">—</strong>
-    </div>
-
-    <div class="quote-item">
-      <span class="small">Background music</span>
-      <strong id="musicCredits">—</strong>
-    </div>
-
-    <div class="quote-item">
-      <span class="small">Editing estimate</span>
-      <strong id="editCredits">—</strong>
-    </div>
+  <div class="scene">
+    <strong>Recommended export settings</strong>
+    <p>Aspect ratio: 9:16</p>
+    <p>Resolution: 1080 × 1920</p>
+    <p>Format: MP4</p>
+    <p>Target duration: approximately 25–30 seconds</p>
   </div>
 
-  <hr>
-
-  <div class="small">Estimated total</div>
-  <div class="quote-total" id="totalCredits">—</div>
-
-  <div id="limitStatus" class="status"></div>
-
-  <button
-    id="renderButton"
-    class="green full"
-    onclick="startRender()"
-    disabled
-  >
-    APPROVE COST & CREATE VIDEO
+  <button onclick="openCapCut()">
+    OPEN CAPCUT
   </button>
 
-  <div class="small">
-    No final video is submitted until you press the approval button.
-  </div>
+  <p class="small">
+    This app does not submit paid video-generation jobs.
+    Final video rendering and export happen in CapCut.
+  </p>
 </section>
 
-<!-- 06 VIDEO RESULT -->
-<section id="resultPanel" class="panel hidden">
-  <h2>06 · Your AI commercial</h2>
+<div id="status" role="status" aria-live="polite">
+  Ready. Search for a product to begin.
+</div>
 
-  <video id="videoPreview" controls playsinline></video>
-
-  <div class="row">
-    <button
-      id="downloadButton"
-      class="green"
-      onclick="downloadVideo()"
-    >
-      SAVE VIDEO
-    </button>
-
-    <button
-      class="secondary"
-      onclick="shareVideo()"
-    >
-      SHARE VIDEO
-    </button>
-  </div>
-
-  <div id="videoLink" class="status"></div>
-</section>
-
-<footer>
-  AI Shopping Shorts 2.0 · Review every video before publishing.
-</footer>
+<div class="footer">
+  AI SHOPPING SHORTS 3.0 · CREATIVE STUDIO
+</div>
 
 </main>
 
 <script>
-let products = [];
-let selectedProduct = null;
-let latestQuote = null;
-let currentRenderId = null;
-let currentVideoUrl = null;
-let polling = false;
-
 const $ = id => document.getElementById(id);
 
-/* STATUS MESSAGE */
-function setStatus(id, message, type="") {
-  const el = $(id);
-  if (!el) return;
+let busy = false;
+let currentScenes = [];
+let currentTitle = "";
 
-  el.textContent = message;
-  el.className = "status" + (type ? " " + type : "");
+function status(message){
+  $("status").textContent = message;
 }
 
-/* READ API RESPONSE SAFELY */
-async function readApiResponse(response) {
-  const raw = await response.text();
+function setBusy(value){
+  busy = value;
+  [
+    "searchButton","scriptButton","previewButton",
+    "copyButton","downloadButton"
+  ].forEach(id => {
+    $(id).disabled = value;
+  });
+}
 
-  let data = {};
+async function readResponse(response){
+  let data;
 
-  try {
-    data = raw ? JSON.parse(raw) : {};
-  } catch (error) {
-    throw new Error(
-      "Server returned a non-JSON response. HTTP " +
-      response.status + ". " +
-      raw.slice(0, 300)
-    );
+  try{
+    data = await response.json();
+  }catch(error){
+    throw new Error("Server returned an invalid response.");
   }
 
-  if (!response.ok) {
-    throw new Error(
-      data.error ||
-      data.message ||
-      "Request failed. HTTP " + response.status
-    );
+  if(!response.ok || data.success === false){
+    throw new Error(data.error || data.message || "Request failed.");
   }
 
   return data;
 }
 
-/* PRODUCT DATA */
-function money(value) {
-  if (value === undefined || value === null || value === "") {
-    return "";
-  }
-  return String(value);
+async function getJSON(url){
+  const response = await fetch(url,{
+    method:"GET",
+    cache:"no-store"
+  });
+  return readResponse(response);
 }
 
-function getProduct() {
+async function post(url,body){
+  const response = await fetch(url,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(body)
+  });
+  return readResponse(response);
+}
+
+function getProduct(){
   return {
-    name: $("productName").value.trim(),
-    price: $("productPrice").value.trim(),
-    store: $("productStore").value.trim(),
-    imageUrl: $("productImage").value.trim(),
-    productUrl: $("productUrl").value.trim()
+    name:$("product").value.trim(),
+    price:$("price").value.trim(),
+    store:$("store").value.trim(),
+    imageUrl:$("imageUrl").value.trim(),
+    productUrl:$("productUrl").value.trim()
   };
 }
 
-function validProduct(statusTarget="renderStatus") {
-  const p = getProduct();
+// PRODUCT SEARCH
+async function findProducts(){
+  if(busy) return;
 
-  if (!p.name) {
-    const message =
-      "Please select a product or enter a product name first.";
-
-    setStatus(statusTarget, message, "bad");
-
-    if (statusTarget !== "renderStatus") {
-      setStatus("renderStatus", message, "bad");
-    }
-
-    $("productName").focus();
-    return false;
-  }
-
-  if (p.imageUrl && !/^https:\/\/.+/i.test(p.imageUrl)) {
-    const message = "Product image must be a public HTTPS URL.";
-
-    setStatus(statusTarget, message, "bad");
-    return false;
-  }
-
-  return true;
-}
-
-/* SELECT PRODUCT */
-function selectProduct(index) {
-  selectedProduct = products[index];
-
-  if (!selectedProduct) return;
-
-  const p = selectedProduct;
-
-  $("productName").value = p.name || p.title || "";
-  $("productPrice").value =
-    money(p.price || p.displayed_price);
-
-  $("productStore").value =
-    p.store || p.merchant || "";
-
-  $("productImage").value =
-    p.imageUrl || p.image || p.image_url || "";
-
-  let productPage =
-    p.productUrl || p.url || p.product_page || "";
-
-  if (productPage && typeof productPage === "object") {
-    productPage = productPage.uri || "";
-  }
-
-  $("productUrl").value = productPage;
-
-  document.querySelectorAll(".product").forEach((el, i) => {
-    el.classList.toggle("selected", i === index);
-  });
-
-  setStatus(
-    "productStatus",
-    "Selected: " + $("productName").value,
-    "good"
-  );
-
-  setStatus(
-    "scriptStatus",
-    "Product selected. You can now generate your English advertisement.",
-    "good"
-  );
-
-  latestQuote = null;
-  $("quotePanel").classList.add("hidden");
-}
-
-/* SEARCH PRODUCTS */
-async function findProducts() {
-  const button = $("findButton");
-
-  button.disabled = true;
-  $("productList").innerHTML = "";
-
-  setStatus(
-    "productStatus",
-    "Searching US product trends...",
-    "loading"
-  );
-
-  try {
-    const q = encodeURIComponent(
-      $("searchQuery").value.trim() || "trending products"
-    );
-
-    const response = await fetch("/api/trending?q=" + q);
-
-    const data = await readApiResponse(response);
-
-    products = Array.isArray(data.products)
-      ? data.products
-      : [];
-
-    if (!products.length) {
-      throw new Error(
-        "No products were returned. Try another keyword."
-      );
-    }
-
-    $("productList").innerHTML = products
-      .slice(0, 5)
-      .map((p, i) => {
-        const name = p.name || p.title || "Product";
-        const image =
-          p.imageUrl || p.image || p.image_url || "";
-        const price =
-          p.price || p.displayed_price || "";
-        const store =
-          p.store || p.merchant || "";
-
-        return `
-          <div
-            class="product"
-            onclick="selectProduct(${i})"
-          >
-            ${
-              image
-                ? `<img src="${escapeHtml(image)}" alt="">`
-                : ""
-            }
-            <div class="name">${escapeHtml(name)}</div>
-            <div class="meta">${escapeHtml(store)}</div>
-            <div class="price">${escapeHtml(price)}</div>
-            <div class="small">Select this product</div>
-          </div>
-        `;
-      })
-      .join("");
-
-    setStatus(
-      "productStatus",
-      products.length + " products found. Select one.",
-      "good"
-    );
-
-  } catch (error) {
-    setStatus(
-      "productStatus",
-      "PRODUCT SEARCH ERROR: " + error.message,
-      "bad"
-    );
-
-  } finally {
-    button.disabled = false;
-  }
-}
-
-/* HTML ESCAPE */
-function escapeHtml(value) {
-  return String(value ?? "").replace(/[&<>"']/g, ch => ({
-    "&":"&amp;",
-    "<":"&lt;",
-    ">":"&gt;",
-    '"':"&quot;",
-    "'":"&#39;"
-  }[ch]));
-}
-
-/* GENERATE ENGLISH SCRIPT */
-async function generateScript() {
-  const button = $("scriptButton");
-
-  if (!validProduct("scriptStatus")) {
+  const query = $("searchQuery").value.trim();
+  if(!query){
+    alert("Enter a product search keyword.");
     return;
   }
 
-  button.disabled = true;
-  button.textContent = "GENERATING SCRIPT...";
+  setBusy(true);
+  $("products").replaceChildren();
+  status("Searching US product results...");
 
-  setStatus(
-    "scriptStatus",
-    "Connecting to AI. Generating your English advertisement...",
-    "loading"
-  );
-
-  setStatus(
-    "renderStatus",
-    "English script generation is in progress..."
-  );
-
-  try {
-    const product = getProduct();
-
-    const response = await fetch("/api/generate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        product: product,
-        style: $("style").value,
-        voice: $("voice").value,
-        language: "en-US",
-        durationSeconds: 20
-      })
-    });
-
-    const data = await readApiResponse(response);
-
-    const script =
-      data.script ||
-      data.response?.script ||
-      data.output ||
-      "";
-
-    if (
-      typeof script !== "string" ||
-      !script.trim()
-    ) {
-      throw new Error(
-        "The AI server responded, but the script was empty. Check api/generate.js."
-      );
-    }
-
-    $("script").value = script.trim();
-
-    latestQuote = null;
-    $("quotePanel").classList.add("hidden");
-    $("renderButton").disabled = true;
-
-    setStatus(
-      "scriptStatus",
-      "SUCCESS! English advertisement script created. Review and edit it below.",
-      "good"
+  try{
+    const data = await getJSON(
+      "/api/trending?q=" + encodeURIComponent(query)
     );
 
-    setStatus(
-      "renderStatus",
-      "English script created. Review it, then check the video cost.",
-      "good"
-    );
-
-  } catch (error) {
-    const message =
-      "SCRIPT ERROR: " + (error.message || "Unknown error");
-
-    setStatus("scriptStatus", message, "bad");
-    setStatus("renderStatus", message, "bad");
-
-  } finally {
-    button.disabled = false;
-    button.textContent = "GENERATE ENGLISH AD SCRIPT";
-  }
-}
-
-/* VALIDATE SCRIPT */
-function validateScript() {
-  if (!validProduct("renderStatus")) {
-    return false;
-  }
-
-  if (!$("script").value.trim()) {
-    setStatus(
-      "renderStatus",
-      "Generate or enter the English script first.",
-      "bad"
-    );
-
-    setStatus(
-      "scriptStatus",
-      "Please generate your English advertisement script first.",
-      "bad"
-    );
-
-    $("script").focus();
-    return false;
-  }
-
-  return true;
-}
-
-/* GET SHOTSTACK COST QUOTE */
-async function getQuote() {
-  if (!validateScript()) return;
-
-  const button = $("quoteButton");
-
-  button.disabled = true;
-  latestQuote = null;
-  $("renderButton").disabled = true;
-
-  $("quotePanel").classList.remove("hidden");
-
-  setStatus(
-    "renderStatus",
-    "Requesting a fresh Shotstack cost estimate...",
-    "loading"
-  );
-
-  setStatus(
-    "limitStatus",
-    "Calculating estimated credits..."
-  );
-
-  try {
-    const response = await fetch("/api/render", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        mode: "quote",
-        product: getProduct(),
-        script: $("script").value.trim(),
-        voice: $("voice").value,
-        style: $("style").value,
-        maxCredits: Number($("maxCredits").value || 30)
-      })
-    });
-
-    const data = await readApiResponse(response);
-
-    latestQuote = data;
-
-    const b = data.breakdown || {};
-
-    $("videoCredits").textContent =
-      Number(b.video || 0).toFixed(3);
-
-    $("voiceCredits").textContent =
-      Number(b.voice || 0).toFixed(3);
-
-    $("musicCredits").textContent =
-      Number(b.music || 0).toFixed(3);
-
-    $("editCredits").textContent =
-      Number(b.editing || 0).toFixed(3);
-
-    $("totalCredits").textContent =
-      Number(data.estimatedTotalCredits || 0).toFixed(3) +
-      " credits";
-
-    const max = Number($("maxCredits").value || 30);
-    const total = Number(data.estimatedTotalCredits || 0);
-
-    if (data.withinLimit === false || total > max) {
-      setStatus(
-        "limitStatus",
-        "Over your " + max +
-        " credit limit. Final rendering is blocked.",
-        "bad"
-      );
-
-      $("renderButton").disabled = true;
-
-      setStatus(
-        "renderStatus",
-        "Estimate completed, but it exceeds your credit limit.",
-        "bad"
-      );
-
-    } else {
-      setStatus(
-        "limitStatus",
-        "Within your " + max +
-        " credit limit. Review the estimate before approving.",
-        "good"
-      );
-
-      $("renderButton").disabled = false;
-
-      setStatus(
-        "renderStatus",
-        "Cost estimate ready. No video has been submitted yet.",
-        "good"
-      );
-    }
-
-  } catch (error) {
-    latestQuote = null;
-
-    setStatus(
-      "renderStatus",
-      "COST ESTIMATE ERROR: " + error.message,
-      "bad"
-    );
-
-    setStatus(
-      "limitStatus",
-      "Cost estimate unavailable.",
-      "bad"
-    );
-
-  } finally {
-    button.disabled = false;
-  }
-}
-
-/* APPROVE AND START FINAL VIDEO */
-async function startRender() {
-  if (!latestQuote || !validateScript()) return;
-
-  const total =
-    Number(latestQuote.estimatedTotalCredits || 0);
-
-  const max =
-    Number($("maxCredits").value || 30);
-
-  if (
-    total > max ||
-    latestQuote.withinLimit === false
-  ) {
-    setStatus(
-      "renderStatus",
-      "Blocked: estimate exceeds your credit limit.",
-      "bad"
-    );
-    return;
-  }
-
-  const approved = confirm(
-    "Submit final video generation?\n\n" +
-    "Estimated cost: " + total.toFixed(3) + " credits\n" +
-    "Maximum: " + max + " credits"
-  );
-
-  if (!approved) return;
-
-  const button = $("renderButton");
-
-  button.disabled = true;
-
-  setStatus(
-    "renderStatus",
-    "Submitting your five-scene AI commercial...",
-    "loading"
-  );
-
-  try {
-    const response = await fetch("/api/render", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        mode: "final",
-        confirmCost: true,
-        quoteToken: latestQuote.quoteToken,
-        product: getProduct(),
-        script: $("script").value.trim(),
-        voice: $("voice").value,
-        style: $("style").value,
-        maxCredits: max
-      })
-    });
-
-    const data = await readApiResponse(response);
-
-    currentRenderId =
-      data.renderId ||
-      data.response?.id ||
-      data.id;
-
-    if (!currentRenderId) {
-      throw new Error(
-        "Shotstack did not return a render ID."
-      );
-    }
-
-    setStatus(
-      "renderStatus",
-      "Video submitted. Render ID: " +
-      currentRenderId +
-      "\nWaiting for AI scenes and final editing...",
-      "loading"
-    );
-
-    pollRender();
-
-  } catch (error) {
-    button.disabled = false;
-
-    setStatus(
-      "renderStatus",
-      "VIDEO SUBMISSION ERROR: " + error.message,
-      "bad"
-    );
-  }
-}
-
-/* CHECK VIDEO STATUS */
-async function pollRender() {
-  if (polling || !currentRenderId) return;
-
-  polling = true;
-
-  let attempts = 0;
-
-  while (attempts < 120) {
-    attempts++;
-
-    try {
-      const response = await fetch(
-        "/api/render?id=" +
-        encodeURIComponent(currentRenderId)
-      );
-
-      const data = await readApiResponse(response);
-
-      const result = data.response || data;
-
-      const status =
-        result.status ||
-        data.status ||
-        "processing";
-
-      if (status === "done") {
-        const url =
-          result.url ||
-          result.videoUrl ||
-          data.url ||
-          data.videoUrl;
-
-        if (!url) {
-          throw new Error(
-            "Render finished, but the finished video URL is missing."
-          );
-        }
-
-        currentVideoUrl = url;
-
-        $("videoPreview").src = url;
-        $("videoLink").textContent = url;
-
-        $("resultPanel").classList.remove("hidden");
-
-        setStatus(
-          "renderStatus",
-          "SUCCESS! Your AI commercial is ready.",
-          "good"
-        );
-
-        $("renderButton").disabled = false;
-
-        polling = false;
-        return;
-      }
-
-      if (status === "failed") {
-        throw new Error(
-          result.error ||
-          data.error ||
-          "Shotstack render failed."
-        );
-      }
-
-      setStatus(
-        "renderStatus",
-        "Video status: " + status +
-        "\nAI video generation and editing can take several minutes.",
-        "loading"
-      );
-
-    } catch (error) {
-      setStatus(
-        "renderStatus",
-        "VIDEO ERROR: " + error.message,
-        "bad"
-      );
-
-      $("renderButton").disabled = false;
-
-      polling = false;
+    if(!Array.isArray(data.products) || !data.products.length){
+      status("No products found. Try another search.");
       return;
     }
 
-    await new Promise(resolve => setTimeout(resolve, 8000));
-  }
+    data.products.slice(0,5).forEach((item,index)=>{
+      const card = document.createElement("div");
+      card.className = "product-item";
 
-  setStatus(
-    "renderStatus",
-    "Rendering is taking longer than expected. Your render ID is:\n" +
-    currentRenderId,
-    "bad"
-  );
+      if(item.imageUrl){
+        const image = document.createElement("img");
+        image.src = item.imageUrl;
+        image.alt = item.name || "Product image";
+        image.loading = "lazy";
+        image.onerror = ()=>{image.style.display="none";};
+        card.append(image);
+      }
 
-  polling = false;
-}
+      const name = document.createElement("h4");
+      name.textContent = (item.rank || index+1) + ". " +
+        (item.name || "Unknown product");
 
-/* DOWNLOAD VIDEO */
-function downloadVideo() {
-  if (!currentVideoUrl) return;
+      const price = document.createElement("div");
+      price.className = "product-price";
+      price.textContent = item.price || "Price unavailable";
 
-  const a = document.createElement("a");
+      const store = document.createElement("div");
+      store.className = "product-store";
+      store.textContent = "Store: " + (item.store || "Unknown");
 
-  a.href = currentVideoUrl;
-  a.target = "_blank";
-  a.rel = "noopener";
-  a.download = "ai-shopping-commercial.mp4";
+      const select = document.createElement("button");
+      select.textContent = "SELECT THIS PRODUCT";
 
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-}
+      select.onclick = async ()=>{
+        if(busy) return;
 
-/* SHARE VIDEO */
-async function shareVideo() {
-  if (!currentVideoUrl) return;
+        $("product").value = item.name || "";
+        $("price").value = item.price || "";
+        $("store").value = item.store || "";
+        $("imageUrl").value = item.imageUrl || "";
+        $("productUrl").value = item.productUrl || "";
+        $("script").value = "";
+        $("storyboard").replaceChildren();
+        currentScenes = [];
 
-  if (navigator.share) {
-    try {
-      await navigator.share({
-        title: "My AI Shopping Commercial",
-        url: currentVideoUrl
-      });
-    } catch (error) {
-      // User cancelled sharing.
-    }
-  } else {
-    window.open(
-      currentVideoUrl,
-      "_blank",
-      "noopener"
-    );
-  }
-}
+        $("advertisementSection").scrollIntoView({behavior:"smooth"});
+        await generateScriptButton();
+      };
 
-/* CLEAR OLD COST QUOTE WHEN SCRIPT OR PRODUCT CHANGES */
-$("script").addEventListener("input", () => {
-  latestQuote = null;
-  $("quotePanel").classList.add("hidden");
-  $("renderButton").disabled = true;
-});
+      card.append(name,price,store,select);
 
-["productName","productPrice","productStore","productImage","productUrl"]
-  .forEach(id => {
-    $(id).addEventListener("input", () => {
-      latestQuote = null;
-      $("quotePanel").classList.add("hidden");
-      $("renderButton").disabled = true;
+      if(item.productUrl){
+        const link = document.createElement("a");
+        link.href = item.productUrl;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = "VIEW PRODUCT";
+        card.append(link);
+      }
+
+      $("products").append(card);
     });
+
+    status("Found " + Math.min(data.products.length,5) +
+      " products. Select one to continue.");
+
+  }catch(error){
+    status("SEARCH ERROR: " + error.message);
+  }finally{
+    setBusy(false);
+  }
+}
+
+// SCRIPT AND STORYBOARD GENERATION
+async function generateScript(product){
+  status("AI is writing your English commercial...");
+
+  const data = await post("/api/generate",{
+    product:product,
+    style:$("videoStyle").value,
+    voice:$("voice").value,
+    targetDuration:28
   });
 
+  if(!data.script || typeof data.script !== "string"){
+    throw new Error("Advertisement script was not returned.");
+  }
+
+  $("script").value = data.script.trim();
+
+  currentScenes = Array.isArray(data.scenes) ? data.scenes : [];
+  currentTitle = data.title || product.name;
+
+  renderStoryboard();
+
+  return data.script.trim();
+}
+
+async function generateScriptButton(){
+  if(busy) return;
+
+  const product = getProduct();
+
+  if(!product.name){
+    alert("Select or enter a product name first.");
+    return;
+  }
+
+  if(product.imageUrl && !/^https:\/\//i.test(product.imageUrl)){
+    alert("Product image URL must start with https://");
+    return;
+  }
+
+  setBusy(true);
+  $("script").value = "";
+  $("storyboard").replaceChildren();
+  currentScenes = [];
+
+  try{
+    await generateScript(product);
+    status("English script and storyboard are ready. Review all five scenes.");
+  }catch(error){
+    status("SCRIPT ERROR: " + error.message);
+  }finally{
+    setBusy(false);
+  }
+}
+
+// DISPLAY FIVE SCENES
+function renderStoryboard(){
+  const container = $("storyboard");
+  container.replaceChildren();
+
+  if(!currentScenes.length){
+    const note = document.createElement("p");
+    note.className = "small";
+    note.textContent =
+      "The server returned a script but no scene breakdown. Check the deployed generate.js version.";
+    container.append(note);
+    return;
+  }
+
+  currentScenes.forEach((scene,index)=>{
+    const card = document.createElement("div");
+    card.className = "scene";
+
+    const number = document.createElement("div");
+    number.className = "scene-number";
+    number.textContent = "SCENE " + (scene.scene || index+1) +
+      " · " + (scene.duration || "—") + " SECONDS";
+
+    const title = document.createElement("h4");
+    title.textContent = scene.name || ("Scene " + (index+1));
+
+    const visual = document.createElement("p");
+    visual.innerHTML = "<strong>Visual direction</strong><br>";
+    visual.append(document.createTextNode(scene.visual || "No visual direction supplied."));
+
+    const camera = document.createElement("p");
+    camera.innerHTML = "<strong>Camera movement</strong><br>";
+    camera.append(document.createTextNode(scene.camera || "Use a smooth cinematic camera movement."));
+
+    const caption = document.createElement("div");
+    caption.className = "scene-caption";
+    caption.textContent = scene.caption || "Caption";
+
+    const narration = document.createElement("p");
+    narration.innerHTML = "<strong>Voice narration</strong><br>";
+    narration.append(document.createTextNode(scene.narration || ""));
+
+    card.append(number,title,visual,camera,caption,narration);
+    container.append(card);
+  });
+}
+
+// VOICE PREVIEW
+function previewVoice(){
+  const script = $("script").value.trim();
+
+  if(!script){
+    alert("Generate your English script first.");
+    return;
+  }
+
+  if(!("speechSynthesis" in window)){
+    alert("Voice preview is not supported by this browser.");
+    return;
+  }
+
+  const utterance = new SpeechSynthesisUtterance(script);
+  utterance.lang = "en-US";
+  utterance.rate = 0.96;
+  utterance.pitch = $("voice").value === "female" ? 1.08 : 0.92;
+
+  speechSynthesis.cancel();
+  speechSynthesis.speak(utterance);
+}
+
+// STORYBOARD EXPORT
+function storyboardData(){
+  return {
+    title:currentTitle,
+    product:getProduct(),
+    script:$("script").value.trim(),
+    scenes:currentScenes,
+    video:{
+      aspectRatio:"9:16",
+      width:1080,
+      height:1920,
+      format:"mp4",
+      targetDurationSeconds:28
+    },
+    workflow:"Import assets into CapCut and export the final video."
+  };
+}
+
+function storyboardText(){
+  const data = storyboardData();
+  let output = data.title + "\n\n";
+  output += "PRODUCT: " + data.product.name + "\n";
+  output += "PRICE: " + data.product.price + "\n";
+  output += "STORE: " + data.product.store + "\n\n";
+  output += "ENGLISH AD SCRIPT\n" + data.script + "\n\n";
+  output += "FIVE-SCENE STORYBOARD\n";
+
+  data.scenes.forEach((s,i)=>{
+    output += "\nSCENE " + (i+1) + " — " + (s.name || "") + "\n";
+    output += "Duration: " + (s.duration || "") + "\n";
+    output += "Visual: " + (s.visual || "") + "\n";
+    output += "Camera: " + (s.camera || "") + "\n";
+    output += "Caption: " + (s.caption || "") + "\n";
+    output += "Narration: " + (s.narration || "") + "\n";
+  });
+
+  output += "\nVIDEO: Vertical 9:16, 1080x1920, MP4\n";
+  output += "FINAL EDIT: CapCut\n";
+  return output;
+}
+
+async function copyStoryboard(){
+  if(!$("script").value.trim()){
+    alert("Generate your script first.");
+    return;
+  }
+
+  try{
+    await navigator.clipboard.writeText(storyboardText());
+    status("Storyboard copied. You can paste it into your notes or CapCut workflow.");
+  }catch(error){
+    status("Copy was blocked by the browser. Use Download Storyboard instead.");
+  }
+}
+
+function downloadStoryboard(){
+  if(!$("script").value.trim()){
+    alert("Generate your script first.");
+    return;
+  }
+
+  const blob = new Blob(
+    [JSON.stringify(storyboardData(),null,2)],
+    {type:"application/json"}
+  );
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "AI-Shopping-Shorts-Storyboard.json";
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+
+  status("Storyboard file download started.");
+}
+
+function openCapCut(){
+  window.open("https://www.capcut.com/","_blank","noopener");
+}
 </script>
+
 </body>
 </html>
