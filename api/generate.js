@@ -1,5 +1,8 @@
 
 
+// api/generate.js
+// AI Shopping Shorts 3.0
+// CapCut workflow: script + five-scene storyboard only
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -13,128 +16,122 @@ export default async function handler(req, res) {
     const apiKey = process.env.OPENAI_API_KEY;
 
     if (!apiKey) {
-      throw new Error("OPENAI_API_KEY is missing in Vercel.");
+      return res.status(500).json({
+        success: false,
+        error: "OPENAI_API_KEY is missing in Vercel."
+      });
     }
 
     const body = req.body || {};
     const product = body.product || {};
 
-    const productName = String(product.name || "").trim();
+    const name = String(product.name || "").trim().slice(0, 180);
+    const price = String(product.price || "").trim().slice(0, 60);
+    const store = String(product.store || "").trim().slice(0, 100);
+    const style = String(body.style || "cinematic").trim();
+    const voice = body.voice === "male" ? "male" : "female";
 
-    if (!productName) {
-      throw new Error("Product name is required.");
+    if (!name) {
+      return res.status(400).json({
+        success: false,
+        error: "Product name is required."
+      });
     }
 
-    const price = String(product.price || "").trim();
-    const store = String(product.store || "").trim();
-    const description = String(product.description || "").trim();
-    const features = Array.isArray(product.features)
-      ? product.features.map(String).join(", ")
-      : String(product.features || "").trim();
+    const styles = {
+      cinematic: "cinematic premium commercial, dramatic lighting, elegant camera movement",
+      luxury: "luxury beauty commercial, refined lighting, premium editorial look",
+      futuristic: "modern futuristic commercial, sleek lighting, dynamic visual transitions",
+      lifestyle: "authentic lifestyle commercial, warm natural light, relatable everyday setting"
+    };
 
-    const style = String(body.style || "cinematic").trim();
+    const visualStyle = styles[style] || styles.cinematic;
 
     const prompt = `
-You are a senior American commercial director and advertising copywriter.
+You are an award-winning American commercial creative director.
 
-Create a premium 28-second vertical shopping advertisement.
+Create a complete short-form shopping advertisement plan.
 
-PRODUCT INFORMATION:
-Name: ${productName}
+PRODUCT:
+Name: ${name}
 Price: ${price || "Not provided"}
 Store: ${store || "Not provided"}
-Description: ${description || "Not provided"}
-Features: ${features || "Not provided"}
-Creative style: ${style}
 
-IMPORTANT:
-- Use natural, fluent American English.
-- Never invent product specifications, benefits, ingredients, ratings,
-  awards, discounts, or performance claims.
-- Only use product facts provided above.
-- If information is missing, use appealing but truthful general language.
-- Make the advertisement sound human, warm, confident, and persuasive.
-- Do not mention unverified prices or promotions.
-- The final call to action should encourage viewers to shop.
-- Total narration should be approximately 55-65 spoken words.
-- Format for a 9:16 vertical video.
+VISUAL STYLE:
+${visualStyle}
 
-CREATE EXACTLY FIVE SCENES:
+PRESENTER:
+${voice} adult American commercial presenter.
+The presenter should look natural, confident, friendly and realistic.
 
-SCENE 1 — CINEMATIC HOOK
-Show a dramatic product hero shot.
-Grab attention immediately.
+IMPORTANT RULES:
+- Do not invent product specifications, ingredients, awards, test results,
+  health benefits, discounts or performance claims.
+- Use only facts supplied in the product information.
+- If product details are limited, focus on presentation, design,
+  shopping appeal and a clear call to action.
+- Write natural conversational American English.
+- Avoid exaggerated or misleading claims.
+- The final advertisement should be approximately 28 seconds.
+- Total spoken narration should be approximately 55 to 65 words.
 
-SCENE 2 — PRODUCT DETAILS
-Show close-up product imagery and details.
-Use only verified product information.
-
-SCENE 3 — LIFESTYLE / AI MODEL
-Show a realistic lifestyle scene with a person
-using or presenting the product.
-Do not claim an actual person endorses the product.
-
-SCENE 4 — KEY APPEAL
-Show the product in an attractive setting.
-Use concise persuasive narration and captions.
-
-SCENE 5 — SHOPPING CALL TO ACTION
-Show the product clearly with price if supplied.
-End with "SHOP NOW".
-
-Return valid JSON only, using this exact structure:
+Return ONLY valid JSON in this exact structure:
 
 {
-  "title": "Short advertisement title",
-  "script": "Complete English narration",
+  "title": "Short campaign title",
+  "script": "Complete spoken English advertisement",
   "scenes": [
     {
       "scene": 1,
       "duration": 5,
-      "name": "Cinematic Hook",
+      "name": "Opening Hook",
       "visual": "Detailed visual direction",
       "camera": "Camera movement",
-      "caption": "Short screen text",
+      "caption": "Short on-screen caption",
       "narration": "Spoken narration for this scene"
     },
     {
       "scene": 2,
       "duration": 6,
-      "name": "Product Details",
+      "name": "Product Reveal",
       "visual": "Detailed visual direction",
       "camera": "Camera movement",
-      "caption": "Short screen text",
+      "caption": "Short on-screen caption",
       "narration": "Spoken narration for this scene"
     },
     {
       "scene": 3,
       "duration": 6,
-      "name": "Lifestyle",
+      "name": "Lifestyle Demonstration",
       "visual": "Detailed visual direction",
       "camera": "Camera movement",
-      "caption": "Short screen text",
+      "caption": "Short on-screen caption",
       "narration": "Spoken narration for this scene"
     },
     {
       "scene": 4,
       "duration": 6,
-      "name": "Key Appeal",
+      "name": "Product Details",
       "visual": "Detailed visual direction",
       "camera": "Camera movement",
-      "caption": "Short screen text",
+      "caption": "Short on-screen caption",
       "narration": "Spoken narration for this scene"
     },
     {
       "scene": 5,
       "duration": 5,
-      "name": "Shop Now",
+      "name": "Final Call To Action",
       "visual": "Detailed visual direction",
       "camera": "Camera movement",
-      "caption": "SHOP NOW",
-      "narration": "Final shopping call to action"
+      "caption": "Short call to action",
+      "narration": "Spoken narration for this scene"
     }
   ]
 }
+
+Make the five scene narrations add up to the complete script.
+Use visually specific directions suitable for manual editing in CapCut.
+Every scene must be vertical 9:16.
 `;
 
     const response = await fetch(
@@ -147,10 +144,11 @@ Return valid JSON only, using this exact structure:
         },
         body: JSON.stringify({
           model: process.env.OPENAI_MODEL || "gpt-4o-mini",
+          response_format: { type: "json_object" },
           messages: [
             {
               role: "system",
-              content: "You create truthful, professional American shopping advertisements. Return valid JSON only."
+              content: "You create accurate, polished American English shopping advertisements. Return valid JSON only."
             },
             {
               role: "user",
@@ -158,69 +156,84 @@ Return valid JSON only, using this exact structure:
             }
           ],
           temperature: 0.7,
-          max_tokens: 1800,
-          response_format: {
-            type: "json_object"
-          }
+          max_tokens: 2200
         })
       }
     );
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(
-        data.error?.message || "OpenAI API request failed."
-      );
-    }
-
-    const content = data.choices?.[0]?.message?.content;
-
-    if (!content) {
-      throw new Error("OpenAI returned an empty response.");
-    }
-
+    const raw = await response.text();
     let result;
 
     try {
-      result = JSON.parse(content);
+      result = raw ? JSON.parse(raw) : {};
     } catch {
-      throw new Error("Could not read the generated advertisement.");
+      throw new Error(
+        `OpenAI returned an invalid response: ${raw.slice(0, 400)}`
+      );
     }
 
-    if (
-      !result.script ||
-      !Array.isArray(result.scenes) ||
-      result.scenes.length !== 5
-    ) {
-      throw new Error("The advertisement must contain a script and exactly five scenes.");
+    if (!response.ok) {
+      throw new Error(
+        result.error?.message || `OpenAI request failed (${response.status}).`
+      );
+    }
+
+    const content = result.choices?.[0]?.message?.content;
+
+    if (!content) {
+      throw new Error("OpenAI did not return advertisement content.");
+    }
+
+    let ad;
+
+    try {
+      ad = JSON.parse(content);
+    } catch {
+      throw new Error("AI returned invalid storyboard JSON.");
+    }
+
+    if (!Array.isArray(ad.scenes) || ad.scenes.length !== 5) {
+      throw new Error("AI must return exactly five scenes.");
+    }
+
+    const scenes = ad.scenes.map((scene, index) => ({
+      scene: index + 1,
+      duration: Number(scene.duration) || [5, 6, 6, 6, 5][index],
+      name: String(scene.name || `Scene ${index + 1}`),
+      visual: String(scene.visual || ""),
+      camera: String(scene.camera || ""),
+      caption: String(scene.caption || ""),
+      narration: String(scene.narration || "")
+    }));
+
+    const script = String(ad.script || "").trim();
+
+    if (!script) {
+      throw new Error("Advertisement script is empty.");
     }
 
     return res.status(200).json({
       success: true,
-
-      // Existing frontend compatibility
-      script: result.script,
-
-      // New 3.0 storyboard data
-      title: result.title || productName,
-      scenes: result.scenes,
-
+      title: String(ad.title || name),
+      script,
+      scenes,
+      product: { name, price, store },
       video: {
         aspectRatio: "9:16",
         width: 1080,
         height: 1920,
-        targetDuration: 28,
-        format: "mp4"
+        format: "mp4",
+        targetDurationSeconds: 28,
+        finalEditor: "CapCut"
       }
     });
 
   } catch (error) {
-    console.error("Script generation error:", error);
+    console.error("GENERATE ERROR:", error);
 
     return res.status(500).json({
       success: false,
-      error: error.message || "Script generation failed."
+      error: error.message || "Advertisement generation failed."
     });
   }
 }
