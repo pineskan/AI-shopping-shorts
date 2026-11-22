@@ -8,23 +8,23 @@
 <meta name="theme-color" content="#080d18">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
 <title>AI Shopping Shorts 3.0</title>
 
 <style>
 *{box-sizing:border-box}
 body{
-  margin:0;padding:16px;background:#080d18;color:#fff;
+  margin:0;padding:14px;background:#080d18;color:#fff;
   font-family:Arial,sans-serif
 }
-main{max-width:650px;margin:20px auto}
-header{text-align:center;padding:24px 8px}
-.logo{font-size:38px}
+main{max-width:720px;margin:18px auto}
+header{text-align:center;padding:22px 8px}
+.logo{font-size:42px}
 h1{
-  font-size:29px;
+  font-size:28px;
   background:linear-gradient(90deg,#16e0a0,#55a8ff);
   -webkit-background-clip:text;background-clip:text;color:transparent
 }
+h3{font-size:18px;margin:3px 0 14px}
 .subtitle,.small{color:#aab8cb;line-height:1.6}
 .subtitle{font-size:14px}
 .small{font-size:12px}
@@ -34,9 +34,9 @@ h1{
 }
 .card{
   background:linear-gradient(145deg,#18243a,#111a2b);
-  border:1px solid #293951;padding:18px;margin:15px 0;border-radius:16px
+  border:1px solid #293951;padding:18px;margin:15px 0;
+  border-radius:16px
 }
-h3{font-size:18px;margin:3px 0 14px}
 label{display:block;color:#aabbd1;font-size:13px;margin-top:12px}
 input,select,textarea{
   width:100%;padding:13px;margin:7px 0;
@@ -61,24 +61,24 @@ button:disabled{opacity:.5;cursor:wait}
 }
 .product-item h4{line-height:1.4}
 .product-price{color:#28e2a6;font-size:18px;font-weight:bold}
-.product-store{color:#9aabc0;font-size:13px}
+.product-store{color:#9aabc0;font-size:13px;margin:6px 0}
 .scene-number{color:#35e5ad;font-size:12px;font-weight:bold}
 .scene h4{margin:8px 0}
 .scene p{font-size:13px;line-height:1.55;color:#c6d2e1}
 .scene strong{color:#fff}
+.scene-caption{
+  display:inline-block;background:#24364c;color:#fff;
+  padding:7px 10px;border-radius:7px;font-weight:bold
+}
 #status{
   background:#111e30;border:1px solid #34445c;border-radius:12px;
   padding:15px;margin:18px 0;text-align:center;
   color:#2ce5aa;line-height:1.6;overflow-wrap:anywhere
 }
+audio{width:100%;margin:12px 0}
 .footer{text-align:center;color:#6e819b;font-size:11px;padding:20px}
-.hidden{display:none}
-a{color:#39e5b0;overflow-wrap:anywhere}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.scene-caption{
-  display:inline-block;background:#24364c;color:#fff;
-  padding:7px 10px;border-radius:7px;font-weight:bold
-}
+a{color:#39e5b0;overflow-wrap:anywhere}
 @media(max-width:430px){
   body{padding:10px}
   .row{grid-template-columns:1fr}
@@ -92,15 +92,13 @@ a{color:#39e5b0;overflow-wrap:anywhere}
 <header>
   <div class="logo">🎬</div>
   <h1>AI SHOPPING SHORTS 3.0</h1>
-  <p class="subtitle">AI Creative Director · Cinematic Storyboard · CapCut Studio</p>
-  <span class="badge">VERTICAL 9:16 · 1080P TARGET</span>
+  <p class="subtitle">AI Creative Director · English AI Voice · CapCut Studio</p>
+  <span class="badge">CAPCUT WORKFLOW · VERTICAL 9:16</span>
 </header>
 
 <section class="card">
   <h3>🇺🇸 US Trending Products</h3>
-  <p class="small">
-    Search popular products and choose one for your commercial.
-  </p>
+  <p class="small">Search products and select one for your advertisement.</p>
 
   <input id="searchQuery" value="popular trending products"
     placeholder="Search products">
@@ -151,7 +149,7 @@ a{color:#39e5b0;overflow-wrap:anywhere}
     </div>
 
     <div>
-      <label for="voice">AI Presenter</label>
+      <label for="voice">AI Presenter Voice</label>
       <select id="voice">
         <option value="female">Female presenter</option>
         <option value="male">Male presenter</option>
@@ -160,71 +158,94 @@ a{color:#39e5b0;overflow-wrap:anywhere}
   </div>
 
   <p class="small">
-    These settings guide the script and visual storyboard.
-    The final video is assembled in CapCut.
+    The AI creates a commercial script and a five-scene editing plan.
+    You can review and edit the script before making the voice.
   </p>
 </section>
 
 <section class="card" id="advertisementSection">
   <h3>✍️ English Advertisement Script</h3>
 
-  <textarea id="script" rows="7" maxlength="4000"
+  <textarea id="script" rows="7" maxlength="1800"
     placeholder="Your English advertisement script will appear here."></textarea>
 
   <button id="scriptButton" onclick="generateScriptButton()">
     GENERATE ENGLISH AD SCRIPT
   </button>
+</section>
 
-  <button class="secondary" id="previewButton" onclick="previewVoice()">
-    🔊 PREVIEW ENGLISH VOICE
+<section class="card">
+  <h3>🎙️ AI English Voice</h3>
+  <p class="small">
+    Generate a natural American English MP3 voice.
+    Generate the script first, then create the audio.
+  </p>
+
+  <button id="voiceButton" onclick="generateVoice()">
+    GENERATE AI VOICE
+  </button>
+
+  <audio id="audioPlayer" controls class="hidden"></audio>
+
+  <button id="downloadVoiceButton" class="secondary hidden"
+    onclick="downloadVoice()">
+    DOWNLOAD MP3 VOICE
   </button>
 </section>
 
 <section class="card">
-  <h3>🎞️ 5-Scene Cinematic Storyboard</h3>
+  <h3>🎞️ Five-Scene Cinematic Storyboard</h3>
 
   <p class="small">
-    AI-generated scene directions, camera movement, captions and narration.
-    Review these scenes before assembling your video.
+    Review the visual direction, camera movement, captions and narration.
+    Use these directions when editing in CapCut.
   </p>
 
   <div id="storyboard">
-    <p class="small">Generate your advertisement script to create the storyboard.</p>
+    <p class="small">Generate your advertisement script first.</p>
   </div>
 
-  <button class="secondary" id="copyButton" onclick="copyStoryboard()">
+  <button id="copyButton" class="secondary" onclick="copyStoryboard()">
     COPY STORYBOARD
   </button>
 
-  <button class="secondary" id="downloadButton" onclick="downloadStoryboard()">
-    DOWNLOAD STORYBOARD FILE
+  <button id="downloadButton" class="secondary" onclick="downloadStoryboard()">
+    DOWNLOAD STORYBOARD JSON
+  </button>
+
+  <button id="downloadTextButton" class="secondary"
+    onclick="downloadStoryboardText()">
+    DOWNLOAD STORYBOARD TEXT
   </button>
 </section>
 
 <section class="card">
-  <h3>🚀 CapCut Production</h3>
+  <h3>🚀 Final Production in CapCut</h3>
 
   <p class="small">
-    Your AI script and storyboard are prepared here. Import your product
-    images or video clips into CapCut, follow the five scenes, add narration
-    and captions, then export your final vertical video.
+    1. Download your product images or video clips.<br>
+    2. Download the AI voice MP3.<br>
+    3. Open CapCut and create a new project.<br>
+    4. Import your images, clips and MP3 voice.<br>
+    5. Follow the five-scene storyboard and add captions.<br>
+    6. Review the finished advertisement before sharing.
   </p>
 
   <div class="scene">
-    <strong>Recommended export settings</strong>
+    <strong>Recommended CapCut export settings</strong>
     <p>Aspect ratio: 9:16</p>
     <p>Resolution: 1080 × 1920</p>
+    <p>Frame rate: 30 fps</p>
     <p>Format: MP4</p>
-    <p>Target duration: approximately 25–30 seconds</p>
+    <p>Target duration: 25–30 seconds</p>
   </div>
 
-  <button onclick="openCapCut()">
-    OPEN CAPCUT
-  </button>
+  <button onclick="openCapCut()">OPEN CAPCUT</button>
 
   <p class="small">
-    This app does not submit paid video-generation jobs.
-    Final video rendering and export happen in CapCut.
+    This app prepares the script, storyboard and voice file.
+    Final video editing and export take place in CapCut.
+    No Shotstack video-rendering credits are used in this workflow.
   </p>
 </section>
 
@@ -232,9 +253,7 @@ a{color:#39e5b0;overflow-wrap:anywhere}
   Ready. Search for a product to begin.
 </div>
 
-<div class="footer">
-  AI SHOPPING SHORTS 3.0 · CREATIVE STUDIO
-</div>
+<div class="footer">AI SHOPPING SHORTS 3.0 · CAPCUT CREATIVE STUDIO</div>
 
 </main>
 
@@ -244,70 +263,83 @@ const $ = id => document.getElementById(id);
 let busy = false;
 let currentScenes = [];
 let currentTitle = "";
+let currentAudioBlob = null;
+let currentAudioUrl = null;
 
-function status(message){
+function status(message) {
   $("status").textContent = message;
 }
 
-function setBusy(value){
+function setBusy(value) {
   busy = value;
+
   [
-    "searchButton","scriptButton","previewButton",
-    "copyButton","downloadButton"
+    "searchButton",
+    "scriptButton",
+    "voiceButton",
+    "copyButton",
+    "downloadButton",
+    "downloadTextButton"
   ].forEach(id => {
     $(id).disabled = value;
   });
 }
 
-async function readResponse(response){
-  let data;
+async function readResponse(response) {
+  const text = await response.text();
+  let data = {};
 
-  try{
-    data = await response.json();
-  }catch(error){
-    throw new Error("Server returned an invalid response.");
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    throw new Error(
+      "Server returned an invalid response: " + text.slice(0, 250)
+    );
   }
 
-  if(!response.ok || data.success === false){
+  if (!response.ok || data.success === false) {
     throw new Error(data.error || data.message || "Request failed.");
   }
 
   return data;
 }
 
-async function getJSON(url){
-  const response = await fetch(url,{
-    method:"GET",
-    cache:"no-store"
+async function getJSON(url) {
+  const response = await fetch(url, {
+    method: "GET",
+    cache: "no-store"
   });
+
   return readResponse(response);
 }
 
-async function post(url,body){
-  const response = await fetch(url,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify(body)
+async function post(url, body) {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(body)
   });
+
   return readResponse(response);
 }
 
-function getProduct(){
+function getProduct() {
   return {
-    name:$("product").value.trim(),
-    price:$("price").value.trim(),
-    store:$("store").value.trim(),
-    imageUrl:$("imageUrl").value.trim(),
-    productUrl:$("productUrl").value.trim()
+    name: $("product").value.trim(),
+    price: $("price").value.trim(),
+    store: $("store").value.trim(),
+    imageUrl: $("imageUrl").value.trim(),
+    productUrl: $("productUrl").value.trim()
   };
 }
 
 // PRODUCT SEARCH
-async function findProducts(){
-  if(busy) return;
+async function findProducts() {
+  if (busy) return;
 
   const query = $("searchQuery").value.trim();
-  if(!query){
+
+  if (!query) {
     alert("Enter a product search keyword.");
     return;
   }
@@ -316,32 +348,32 @@ async function findProducts(){
   $("products").replaceChildren();
   status("Searching US product results...");
 
-  try{
+  try {
     const data = await getJSON(
       "/api/trending?q=" + encodeURIComponent(query)
     );
 
-    if(!Array.isArray(data.products) || !data.products.length){
+    if (!Array.isArray(data.products) || !data.products.length) {
       status("No products found. Try another search.");
       return;
     }
 
-    data.products.slice(0,5).forEach((item,index)=>{
+    data.products.slice(0, 5).forEach((item, index) => {
       const card = document.createElement("div");
       card.className = "product-item";
 
-      if(item.imageUrl){
+      if (item.imageUrl) {
         const image = document.createElement("img");
         image.src = item.imageUrl;
         image.alt = item.name || "Product image";
         image.loading = "lazy";
-        image.onerror = ()=>{image.style.display="none";};
+        image.onerror = () => { image.style.display = "none"; };
         card.append(image);
       }
 
       const name = document.createElement("h4");
-      name.textContent = (item.rank || index+1) + ". " +
-        (item.name || "Unknown product");
+      name.textContent =
+        (item.rank || index + 1) + ". " + (item.name || "Unknown product");
 
       const price = document.createElement("div");
       price.className = "product-price";
@@ -354,25 +386,24 @@ async function findProducts(){
       const select = document.createElement("button");
       select.textContent = "SELECT THIS PRODUCT";
 
-      select.onclick = async ()=>{
-        if(busy) return;
+      select.onclick = async () => {
+        if (busy) return;
 
         $("product").value = item.name || "";
         $("price").value = item.price || "";
         $("store").value = item.store || "";
         $("imageUrl").value = item.imageUrl || "";
         $("productUrl").value = item.productUrl || "";
-        $("script").value = "";
-        $("storyboard").replaceChildren();
-        currentScenes = [];
 
-        $("advertisementSection").scrollIntoView({behavior:"smooth"});
+        clearPreviousWork();
+
+        $("advertisementSection").scrollIntoView({behavior: "smooth"});
         await generateScriptButton();
       };
 
-      card.append(name,price,store,select);
+      card.append(name, price, store, select);
 
-      if(item.productUrl){
+      if (item.productUrl) {
         const link = document.createElement("a");
         link.href = item.productUrl;
         link.target = "_blank";
@@ -384,161 +415,229 @@ async function findProducts(){
       $("products").append(card);
     });
 
-    status("Found " + Math.min(data.products.length,5) +
-      " products. Select one to continue.");
+    status(
+      "Found " + Math.min(data.products.length, 5) +
+      " products. Select one to continue."
+    );
 
-  }catch(error){
+  } catch (error) {
     status("SEARCH ERROR: " + error.message);
-  }finally{
+  } finally {
     setBusy(false);
   }
 }
 
-// SCRIPT AND STORYBOARD GENERATION
-async function generateScript(product){
-  status("AI is writing your English commercial...");
+function clearPreviousWork() {
+  $("script").value = "";
+  $("storyboard").replaceChildren();
+  currentScenes = [];
+  currentTitle = "";
 
-  const data = await post("/api/generate",{
-    product:product,
-    style:$("videoStyle").value,
-    voice:$("voice").value,
-    targetDuration:28
-  });
+  currentAudioBlob = null;
 
-  if(!data.script || typeof data.script !== "string"){
-    throw new Error("Advertisement script was not returned.");
+  if (currentAudioUrl) {
+    URL.revokeObjectURL(currentAudioUrl);
+    currentAudioUrl = null;
   }
 
-  $("script").value = data.script.trim();
-
-  currentScenes = Array.isArray(data.scenes) ? data.scenes : [];
-  currentTitle = data.title || product.name;
-
-  renderStoryboard();
-
-  return data.script.trim();
+  $("audioPlayer").pause();
+  $("audioPlayer").removeAttribute("src");
+  $("audioPlayer").classList.add("hidden");
+  $("downloadVoiceButton").classList.add("hidden");
 }
 
-async function generateScriptButton(){
-  if(busy) return;
+// SCRIPT GENERATION
+async function generateScriptButton() {
+  if (busy) return;
 
   const product = getProduct();
 
-  if(!product.name){
+  if (!product.name) {
     alert("Select or enter a product name first.");
     return;
   }
 
-  if(product.imageUrl && !/^https:\/\//i.test(product.imageUrl)){
+  if (product.imageUrl && !/^https:\/\//i.test(product.imageUrl)) {
     alert("Product image URL must start with https://");
     return;
   }
 
   setBusy(true);
-  $("script").value = "";
-  $("storyboard").replaceChildren();
-  currentScenes = [];
+  clearPreviousWork();
+  status("AI is writing your English commercial...");
 
-  try{
-    await generateScript(product);
-    status("English script and storyboard are ready. Review all five scenes.");
-  }catch(error){
+  try {
+    const data = await post("/api/generate", {
+      product,
+      style: $("videoStyle").value,
+      voice: $("voice").value,
+      targetDuration: 28
+    });
+
+    if (!data.script || typeof data.script !== "string") {
+      throw new Error("Advertisement script was not returned.");
+    }
+
+    $("script").value = data.script.trim();
+    currentScenes = Array.isArray(data.scenes) ? data.scenes : [];
+    currentTitle = data.title || product.name;
+
+    renderStoryboard();
+
+    status("English script and five-scene storyboard are ready.");
+
+  } catch (error) {
     status("SCRIPT ERROR: " + error.message);
-  }finally{
+  } finally {
     setBusy(false);
   }
 }
 
-// DISPLAY FIVE SCENES
-function renderStoryboard(){
+// REAL AI VOICE GENERATION
+async function generateVoice() {
+  if (busy) return;
+
+  const script = $("script").value.trim();
+
+  if (!script) {
+    alert("Generate or enter your English script first.");
+    return;
+  }
+
+  setBusy(true);
+  status("Generating your AI English MP3 voice...");
+
+  try {
+    const data = await post("/api/voice", {
+      script,
+      voice: $("voice").value
+    });
+
+    if (!data.audioBase64) {
+      throw new Error("MP3 audio data was not returned.");
+    }
+
+    const binary = atob(data.audioBase64);
+    const bytes = new Uint8Array(binary.length);
+
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+
+    currentAudioBlob = new Blob(
+      [bytes],
+      {type: data.mimeType || "audio/mpeg"}
+    );
+
+    if (currentAudioUrl) {
+      URL.revokeObjectURL(currentAudioUrl);
+    }
+
+    currentAudioUrl = URL.createObjectURL(currentAudioBlob);
+
+    $("audioPlayer").src = currentAudioUrl;
+    $("audioPlayer").classList.remove("hidden");
+    $("downloadVoiceButton").classList.remove("hidden");
+
+    status("AI voice is ready. Play it or download the MP3 for CapCut.");
+
+  } catch (error) {
+    status("VOICE ERROR: " + error.message);
+  } finally {
+    setBusy(false);
+  }
+}
+
+function downloadVoice() {
+  if (!currentAudioBlob) {
+    alert("Generate the AI voice first.");
+    return;
+  }
+
+  const url = URL.createObjectURL(currentAudioBlob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = "AI-Shopping-Shorts-Voice.mp3";
+
+  document.body.append(link);
+  link.click();
+  link.remove();
+
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+
+  status("MP3 download started.");
+}
+
+// STORYBOARD DISPLAY
+function renderStoryboard() {
   const container = $("storyboard");
   container.replaceChildren();
 
-  if(!currentScenes.length){
+  if (!currentScenes.length) {
     const note = document.createElement("p");
     note.className = "small";
-    note.textContent =
-      "The server returned a script but no scene breakdown. Check the deployed generate.js version.";
+    note.textContent = "No scene breakdown was returned.";
     container.append(note);
     return;
   }
 
-  currentScenes.forEach((scene,index)=>{
+  currentScenes.forEach((scene, index) => {
     const card = document.createElement("div");
     card.className = "scene";
 
     const number = document.createElement("div");
     number.className = "scene-number";
-    number.textContent = "SCENE " + (scene.scene || index+1) +
+    number.textContent =
+      "SCENE " + (scene.scene || index + 1) +
       " · " + (scene.duration || "—") + " SECONDS";
 
     const title = document.createElement("h4");
-    title.textContent = scene.name || ("Scene " + (index+1));
+    title.textContent = scene.name || ("Scene " + (index + 1));
 
     const visual = document.createElement("p");
     visual.innerHTML = "<strong>Visual direction</strong><br>";
-    visual.append(document.createTextNode(scene.visual || "No visual direction supplied."));
+    visual.append(document.createTextNode(scene.visual || ""));
 
     const camera = document.createElement("p");
     camera.innerHTML = "<strong>Camera movement</strong><br>";
-    camera.append(document.createTextNode(scene.camera || "Use a smooth cinematic camera movement."));
+    camera.append(document.createTextNode(scene.camera || ""));
 
     const caption = document.createElement("div");
     caption.className = "scene-caption";
     caption.textContent = scene.caption || "Caption";
 
     const narration = document.createElement("p");
-    narration.innerHTML = "<strong>Voice narration</strong><br>";
+    narration.innerHTML = "<br><strong>Voice narration</strong><br>";
     narration.append(document.createTextNode(scene.narration || ""));
 
-    card.append(number,title,visual,camera,caption,narration);
+    card.append(number, title, visual, camera, caption, narration);
     container.append(card);
   });
 }
 
-// VOICE PREVIEW
-function previewVoice(){
-  const script = $("script").value.trim();
-
-  if(!script){
-    alert("Generate your English script first.");
-    return;
-  }
-
-  if(!("speechSynthesis" in window)){
-    alert("Voice preview is not supported by this browser.");
-    return;
-  }
-
-  const utterance = new SpeechSynthesisUtterance(script);
-  utterance.lang = "en-US";
-  utterance.rate = 0.96;
-  utterance.pitch = $("voice").value === "female" ? 1.08 : 0.92;
-
-  speechSynthesis.cancel();
-  speechSynthesis.speak(utterance);
-}
-
 // STORYBOARD EXPORT
-function storyboardData(){
+function storyboardData() {
   return {
-    title:currentTitle,
-    product:getProduct(),
-    script:$("script").value.trim(),
-    scenes:currentScenes,
-    video:{
-      aspectRatio:"9:16",
-      width:1080,
-      height:1920,
-      format:"mp4",
-      targetDurationSeconds:28
+    title: currentTitle,
+    product: getProduct(),
+    script: $("script").value.trim(),
+    scenes: currentScenes,
+    video: {
+      aspectRatio: "9:16",
+      width: 1080,
+      height: 1920,
+      frameRate: 30,
+      format: "mp4",
+      targetDurationSeconds: 28
     },
-    workflow:"Import assets into CapCut and export the final video."
+    workflow: "Import assets and MP3 voice into CapCut. Edit and export manually."
   };
 }
 
-function storyboardText(){
+function storyboardText() {
   const data = storyboardData();
+
   let output = data.title + "\n\n";
   output += "PRODUCT: " + data.product.name + "\n";
   output += "PRICE: " + data.product.price + "\n";
@@ -546,59 +645,82 @@ function storyboardText(){
   output += "ENGLISH AD SCRIPT\n" + data.script + "\n\n";
   output += "FIVE-SCENE STORYBOARD\n";
 
-  data.scenes.forEach((s,i)=>{
-    output += "\nSCENE " + (i+1) + " — " + (s.name || "") + "\n";
-    output += "Duration: " + (s.duration || "") + "\n";
-    output += "Visual: " + (s.visual || "") + "\n";
-    output += "Camera: " + (s.camera || "") + "\n";
-    output += "Caption: " + (s.caption || "") + "\n";
-    output += "Narration: " + (s.narration || "") + "\n";
+  data.scenes.forEach((scene, index) => {
+    output += "\nSCENE " + (index + 1) + " — " + (scene.name || "") + "\n";
+    output += "Duration: " + (scene.duration || "") + " seconds\n";
+    output += "Visual: " + (scene.visual || "") + "\n";
+    output += "Camera: " + (scene.camera || "") + "\n";
+    output += "Caption: " + (scene.caption || "") + "\n";
+    output += "Narration: " + (scene.narration || "") + "\n";
   });
 
   output += "\nVIDEO: Vertical 9:16, 1080x1920, MP4\n";
   output += "FINAL EDIT: CapCut\n";
+
   return output;
 }
 
-async function copyStoryboard(){
-  if(!$("script").value.trim()){
+async function copyStoryboard() {
+  if (!$("script").value.trim()) {
     alert("Generate your script first.");
     return;
   }
 
-  try{
+  try {
     await navigator.clipboard.writeText(storyboardText());
-    status("Storyboard copied. You can paste it into your notes or CapCut workflow.");
-  }catch(error){
-    status("Copy was blocked by the browser. Use Download Storyboard instead.");
+    status("Storyboard copied.");
+  } catch {
+    status("Copy was blocked. Use the download buttons instead.");
   }
 }
 
-function downloadStoryboard(){
-  if(!$("script").value.trim()){
-    alert("Generate your script first.");
-    return;
-  }
-
-  const blob = new Blob(
-    [JSON.stringify(storyboardData(),null,2)],
-    {type:"application/json"}
-  );
-
+function saveTextFile(filename, content, type) {
+  const blob = new Blob([content], {type});
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
+
   link.href = url;
-  link.download = "AI-Shopping-Shorts-Storyboard.json";
+  link.download = filename;
+
   document.body.append(link);
   link.click();
   link.remove();
-  URL.revokeObjectURL(url);
 
-  status("Storyboard file download started.");
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
 }
 
-function openCapCut(){
-  window.open("https://www.capcut.com/","_blank","noopener");
+function downloadStoryboard() {
+  if (!$("script").value.trim()) {
+    alert("Generate your script first.");
+    return;
+  }
+
+  saveTextFile(
+    "AI-Shopping-Shorts-Storyboard.json",
+    JSON.stringify(storyboardData(), null, 2),
+    "application/json"
+  );
+
+  status("Storyboard JSON download started.");
+}
+
+function downloadStoryboardText() {
+  if (!$("script").value.trim()) {
+    alert("Generate your script first.");
+    return;
+  }
+
+  saveTextFile(
+    "AI-Shopping-Shorts-Storyboard.txt",
+    storyboardText(),
+    "text/plain"
+  );
+
+  status("Storyboard text download started.");
+}
+
+function openCapCut() {
+  window.open("https://www.capcut.com/", "_blank", "noopener");
 }
 </script>
 
