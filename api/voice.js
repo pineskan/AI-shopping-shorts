@@ -1,56 +1,51 @@
 
+
+// api/voice.js
+// AI Shopping Shorts 3.0
+// OpenAI text-to-speech -> downloadable MP3 for CapCut
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({
-      error: "Method not allowed"
+      success: false,
+      error: "POST method required."
     });
   }
-
-  const openaiKey = process.env.OPENAI_API_KEY;
-  const shotstackKey = process.env.SHOTSTACK_API_KEY;
-  const env = process.env.SHOTSTACK_ENV || "stage";
-
-  if (!openaiKey || !shotstackKey) {
-    return res.status(500).json({
-      error: "API keys are missing"
-    });
-  }
-
-  if (!["stage", "v1"].includes(env)) {
-    return res.status(500).json({
-      error: "Invalid SHOTSTACK_ENV"
-    });
-  }
-
-  const ingestBase =
-    `https://api.shotstack.io/ingest/${env}`;
 
   try {
-    const { script, voice } = req.body || {};
+    const apiKey = process.env.OPENAI_API_KEY;
 
-    if (!script || typeof script !== "string") {
-      return res.status(400).json({
-        error: "Advertisement script is required"
+    if (!apiKey) {
+      return res.status(500).json({
+        success: false,
+        error: "OPENAI_API_KEY is missing in Vercel."
       });
     }
 
-    if (script.length > 4000) {
+    const body = req.body || {};
+    const script = String(body.script || "").trim();
+    const selectedVoice = body.voice === "male" ? "onyx" : "coral";
+
+    if (!script) {
       return res.status(400).json({
-        error: "Script is too long"
+        success: false,
+        error: "Advertisement script is required."
       });
     }
 
-    const selectedVoice =
-      voice === "male" ? "onyx" : "coral";
+    if (script.length > 1800) {
+      return res.status(400).json({
+        success: false,
+        error: "Script is too long. Please keep it under 1800 characters."
+      });
+    }
 
-    // STEP 1: Generate MP3 with OpenAI
-
-    const speechResponse = await fetch(
+    const response = await fetch(
       "https://api.openai.com/v1/audio/speech",
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${openaiKey}`,
+          "Authorization": `Bearer ${apiKey}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -58,152 +53,53 @@ export default async function handler(req, res) {
           voice: selectedVoice,
           input: script,
           instructions:
-            "Speak in natural American English with a clear, friendly commercial advertising tone.",
+            "Speak in natural American English. " +
+            "Use a warm, confident, friendly commercial advertising tone. " +
+            "Sound like a real professional presenter. " +
+            "Use clear pronunciation, natural pauses and expressive delivery.",
           response_format: "mp3"
         })
       }
     );
 
-    if (!speechResponse.ok) {
-      const error = await speechResponse.text();
-      throw new Error("OpenAI voice error: " + error);
+    if (!response.ok) {
+      const errorText = await response.text();
+
+      let message = errorText;
+
+      try {
+        const parsed = JSON.parse(errorText);
+        message = parsed.error?.message || errorText;
+      } catch {}
+
+      throw new Error(
+        `OpenAI voice error (${response.status}): ${message.slice(0, 500)}`
+      );
     }
 
     const audioBuffer = Buffer.from(
-      await speechResponse.arrayBuffer()
+      await response.arrayBuffer()
     );
 
-    // STEP 2: Request Shotstack upload URL
-
-    const uploadResponse = await fetch(
-      `${ingestBase}/upload`,
-      {
-        method: "POST",
-        headers: {
-          "Accept": "application/json",
-          "x-api-key": shotstackKey
-        }
-      }
-    );
-
-    const uploadData = await uploadResponse.json();
-
-    if (!uploadResponse.ok) {
-      throw new Error(
-        JSON.stringify(uploadData)
-      );
+    if (!audioBuffer.length) {
+      throw new Error("OpenAI returned an empty audio file.");
     }
-
-    const uploadId = uploadData.data?.id;
-
-    const signedUrl =
-      uploadData.data?.attributes?.url;
-
-    if (!uploadId || !signedUrl) {
-      throw new Error(
-        "Shotstack upload ID or signed URL missing"
-      );
-    }
-
-    // STEP 3: Upload MP3 using FULL signed URL
-
-    const putResponse = await fetch(signedUrl, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "audio/mpeg"
-      },
-      body: audioBuffer
-    });
-
-    if (!putResponse.ok) {
-      const error = await putResponse.text();
-
-      throw new Error(
-        "Shotstack MP3 upload failed: " + error
-      );
-    }
-
-    // STEP 4: Wait until source is ready
-
-    let audioUrl = null;
-    let sourceStatus = "";
-
-    for (let i = 0; i < 30; i++) {
-
-      await new Promise(resolve =>
-        setTimeout(resolve, 2000)
-      );
-
-      const sourceResponse = await fetch(
-        `${ingestBase}/sources/${encodeURIComponent(uploadId)}`,
-        {
-          method: "GET",
-          headers: {
-            "Accept": "application/json",
-            "x-api-key": shotstackKey
-          }
-        }
-      );
-
-      const sourceData = await sourceResponse.json();
-
-      if (!sourceResponse.ok) {
-        throw new Error(
-          "Cannot check Shotstack source: " +
-          JSON.stringify(sourceData)
-        );
-      }
-
-      const attributes =
-        sourceData.data?.attributes || {};
-
-      sourceStatus = attributes.status || "";
-
-      if (sourceStatus === "ready") {
-
-        audioUrl = attributes.source;
-
-        if (!audioUrl) {
-          throw new Error(
-            "Source is ready but audio URL is missing"
-          );
-        }
-
-        break;
-      }
-
-      if (sourceStatus === "failed") {
-        throw new Error(
-          "Shotstack audio ingestion failed"
-        );
-      }
-    }
-
-    if (!audioUrl) {
-      throw new Error(
-        "Audio upload timed out. Last status: " +
-        sourceStatus
-      );
-    }
-
-    // STEP 5: Return usable audio URL
 
     return res.status(200).json({
       success: true,
-      audioUrl,
       voice: selectedVoice,
-      status: "ready"
+      format: "mp3",
+      mimeType: "audio/mpeg",
+      fileName: "AI-Shopping-Shorts-Voice.mp3",
+      audioBase64: audioBuffer.toString("base64")
     });
 
   } catch (error) {
-
-    console.error(
-      "Voice generation error:",
-      error
-    );
+    console.error("VOICE ERROR:", error);
 
     return res.status(500).json({
-      error: error.message || "Voice generation failed"
+      success: false,
+      error: error.message || "Voice generation failed."
     });
   }
 }
