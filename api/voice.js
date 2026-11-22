@@ -1,8 +1,7 @@
 
-
 // api/voice.js
 // AI Shopping Shorts 3.0
-// OpenAI text-to-speech -> downloadable MP3 for CapCut
+// OpenAI TTS -> MP3 for CapCut
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -24,7 +23,9 @@ export default async function handler(req, res) {
 
     const body = req.body || {};
     const script = String(body.script || "").trim();
-    const selectedVoice = body.voice === "male" ? "onyx" : "coral";
+
+    const selectedVoice =
+      body.voice === "male" ? "onyx" : "coral";
 
     if (!script) {
       return res.status(400).json({
@@ -36,7 +37,7 @@ export default async function handler(req, res) {
     if (script.length > 1800) {
       return res.status(400).json({
         success: false,
-        error: "Script is too long. Please keep it under 1800 characters."
+        error: "Script is too long."
       });
     }
 
@@ -45,7 +46,7 @@ export default async function handler(req, res) {
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${apiKey}`,
+          Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -54,9 +55,9 @@ export default async function handler(req, res) {
           input: script,
           instructions:
             "Speak in natural American English. " +
-            "Use a warm, confident, friendly commercial advertising tone. " +
-            "Sound like a real professional presenter. " +
-            "Use clear pronunciation, natural pauses and expressive delivery.",
+            "Use a warm, confident, friendly commercial tone. " +
+            "Sound like a professional American presenter. " +
+            "Use natural pauses and expressive delivery.",
           response_format: "mp3"
         })
       }
@@ -72,9 +73,10 @@ export default async function handler(req, res) {
         message = parsed.error?.message || errorText;
       } catch {}
 
-      throw new Error(
-        `OpenAI voice error (${response.status}): ${message.slice(0, 500)}`
-      );
+      return res.status(response.status).json({
+        success: false,
+        error: "OpenAI voice error: " + message.slice(0, 400)
+      });
     }
 
     const audioBuffer = Buffer.from(
@@ -82,7 +84,7 @@ export default async function handler(req, res) {
     );
 
     if (!audioBuffer.length) {
-      throw new Error("OpenAI returned an empty audio file.");
+      throw new Error("Empty MP3 audio returned.");
     }
 
     return res.status(200).json({
