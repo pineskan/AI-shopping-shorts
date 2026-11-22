@@ -1,8 +1,14 @@
 
+
+// api/trending.js
+// AI Shopping Shorts 3.0
+// US Google Shopping product search
+
 export default async function handler(req, res) {
   if (req.method !== "GET") {
     return res.status(405).json({
-      error: "Method not allowed"
+      success: false,
+      error: "GET method required."
     });
   }
 
@@ -10,13 +16,22 @@ export default async function handler(req, res) {
 
   if (!apiKey) {
     return res.status(500).json({
-      error: "SERPAPI_API_KEY is missing"
+      success: false,
+      error: "SERPAPI_API_KEY is missing in Vercel."
     });
   }
 
   try {
-    const query =
-      req.query.q || "popular trending products";
+    const query = String(
+      req.query.q || "popular trending products"
+    ).trim();
+
+    if (!query) {
+      return res.status(400).json({
+        success: false,
+        error: "Search query is required."
+      });
+    }
 
     const params = new URLSearchParams({
       engine: "google_shopping",
@@ -27,15 +42,16 @@ export default async function handler(req, res) {
     });
 
     const response = await fetch(
-      `https://serpapi.com/search.json?${params}`
+      "https://serpapi.com/search.json?" + params.toString()
     );
 
     if (!response.ok) {
       const errorText = await response.text();
 
       return res.status(502).json({
-        error: "Shopping search failed",
-        details: errorText
+        success: false,
+        error: "Shopping search failed.",
+        details: errorText.slice(0, 400)
       });
     }
 
@@ -61,9 +77,11 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
+    console.error("TRENDING ERROR:", error);
+
     return res.status(500).json({
-      error: "Server error",
-      details: error.message
+      success: false,
+      error: error.message || "Product search failed."
     });
   }
 }
